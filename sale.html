@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>SecureWorks — Sale</title>
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#293C46">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SW Sale">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script>
+    window.SUPABASE_URL = 'https://kevgrhcjxspbxgovpmfl.supabase.co';
+    window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtldmdyaGNqeHNwYnhnb3ZwbWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNTQxMDUsImV4cCI6MjA4NzkzMDEwNX0.lPUEvx8u98WL86PcMNv8yfLnd6OQKzTUOCsRewfQiZc';
+  </script>
+  <script src="shared/brand.js"></script>
+  <script src="shared/cloud.js"></script>
+
+  <style>
+    /* ══════════════════════════════════════════════════
+       CSS VARIABLES
+       ══════════════════════════════════════════════════ */
+    :root {
+      --sw-orange: #F15A29;
+      --sw-dark: #293C46;
+      --sw-mid: #4C6A7C;
+      --sw-light: #F0F4F7;
+      --sw-bg: #F7F8FA;
+      --sw-border: #EAEDF0;
+      --sw-text: #1A2332;
+      --sw-text-sec: #7C8898;
+      --sw-green: #27AE60;
+      --sw-red: #E74C3C;
+      --sw-yellow: #E67E22;
+      --sw-blue: #3498DB;
+      --sw-card: #FFFFFF;
+      --sw-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --sw-shadow-hover: 0 10px 40px rgba(0,0,0,0.08);
+      --sw-radius: 12px;
+      --sw-font: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --sw-font-num: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    }
+
+    /* ══════════════════════════════════════════════════
+       RESET + BASE
+       ══════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sw-font);
+      background: var(--sw-bg);
+      color: var(--sw-text);
+      line-height: 1.5;
+      padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════════════════════════════════════════════
+       HEADER
+       ══════════════════════════════════════════════════ */
+    .header {
+      background: var(--sw-dark);
+      color: #fff;
+      padding: 12px 16px;
+      padding-top: max(12px, env(safe-area-inset-top));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .header-brand { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .header-brand span { font-weight: 400; opacity: 0.7; }
+    .header-nav { display: none; gap: 4px; }
+    .header-nav button {
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 6px;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .header-nav button.active { background: var(--sw-orange); color: #fff; }
+    .header-nav button:hover:not(.active) { background: rgba(255,255,255,0.15); }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header-user { font-size: 13px; opacity: 0.8; cursor: pointer; }
+    .btn-header {
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.8);
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-header:hover { background: rgba(255,255,255,0.2); }
+
+    @media (min-width: 769px) {
+      .header { padding: 12px 24px; }
+      .header-nav { display: flex; }
+    }
+
+    /* ══════════════════════════════════════════════════
+       BOTTOM NAV (mobile only)
+       ══════════════════════════════════════════════════ */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--sw-dark);
+      display: none;
+      z-index: 100;
+      padding: 6px 4px;
+      padding-bottom: max(6px, env(safe-area-inset-bottom));
+      gap: 4px;
+    }
+    .bottom-nav.show { display: flex; }
+    .bottom-nav button {
+      flex: 1;
+      padding: 8px 4px;
+      min-height: 48px;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: all 0.15s;
+    }
+    .bottom-nav button.active { background: var(--sw-orange); color: #fff; }
+    .bottom-nav button svg { width: 20px; height: 20px; fill: currentColor; }
+
+    @media (min-width: 769px) {
+      .bottom-nav { display: none !important; }
+      body { padding-bottom: 0; }
+    }
+
+    /* ══════════════════════════════════════════════════
+       VIEWS
+       ══════════════════════════════════════════════════ */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .container { padding: 16px; max-width: 800px; margin: 0 auto; }
+    .container-wide { padding: 16px; max-width: 1200px; margin: 0 auto; }
+
+    @media (min-width: 769px) {
+      .container { padding: 24px; }
+      .container-wide { padding: 24px; }
+    }
+
+    /* ══════════════════════════════════════════════════
+       LOGIN
+       ══════════════════════════════════════════════════ */
+    .login-box {
+      max-width: 360px;
+      margin: 60px auto;
+      padding: 32px 24px;
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      box-shadow: var(--sw-shadow);
+      text-align: center;
+    }
+    .login-box h2 { font-size: 20px; color: var(--sw-dark); margin-bottom: 4px; }
+    .login-box p { font-size: 13px; color: var(--sw-text-sec); margin-bottom: 20px; }
+    .login-box input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--sw-border);
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      outline: none;
+      font-family: var(--sw-font);
+    }
+    .login-box input:focus { border-color: var(--sw-orange); }
+
+    /* ══════════════════════════════════════════════════
+       BUTTONS
+       ══════════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+      font-family: var(--sw-font);
+    }
+    .btn-primary { background: var(--sw-orange); color: #fff; }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-primary:disabled { background: var(--sw-border); color: var(--sw-text-sec); cursor: default; }
+    .btn-secondary { background: var(--sw-light); color: var(--sw-dark); }
+    .btn-small { padding: 8px 14px; font-size: 13px; width: auto; }
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--sw-border);
+      color: var(--sw-text);
+      padding: 8px 14px;
+      font-size: 13px;
+      width: auto;
+    }
+    .btn-ghost:hover { background: var(--sw-light); }
+    .btn-ghost.active { background: var(--sw-orange); color: #fff; border-color: var(--sw-orange); }
+
+    /* ══════════════════════════════════════════════════
+       STAT CARDS
+       ══════════════════════════════════════════════════ */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 769px) {
+      .stat-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .stat-card {
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      padding: 14px;
+      box-shadow: var(--sw-shadow);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-left: 4px solid var(--sw-border);
+      transition: box-shadow 0.2s;
+    }
+    .stat-card:hover { box-shadow: var(--sw-shadow-hover); }
+    .stat-card.border-orange { border-left-color: var(--sw-orange); }
+    .stat-card.border-green { border-left-color: var(--sw-green); }
+    .stat-card.border-blue { border-left-color: var(--sw-blue); }
+    .stat-card.border-amber { border-left-color: var(--sw-yellow); }
+    .stat-card.border-red { border-left-color: var(--sw-red); }
+    .stat-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .stat-icon svg { width: 16px; height: 16px; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .stat-icon.orange { background: rgba(241,90,41,0.1); }
+    .stat-icon.orange svg { stroke: var(--sw-orange); }
+    .stat-icon.green { background: rgba(39,174,96,0.1); }
+    .stat-icon.green svg { stroke: var(--sw-green); }
+    .stat-icon.blue { background: rgba(52,152,219,0.1); }
+    .stat-icon.blue svg { stroke: var(--sw-blue); }
+    .stat-icon.amber { background: rgba(230,126,34,0.1); }
+    .stat-icon.amber svg { stroke: var(--sw-yellow); }
+    .stat-body { flex: 1; min-width: 0; }
+    .stat-label {
+      font-size: 11px;
+      color: var(--sw-text-sec);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--sw-text);
+      font-family: var(--sw-font-num);
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+    .stat-sub { font-size: 11px; color: var(--sw-text-sec); margin-top: 2px; }
+
+    /* ══════════════════════════════════════════════════
+       SECTION HEADINGS
+       ══════════════════════════════════════════════════ */
+    .section-heading {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--sw-text);
+      margin-bottom: 12px;
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-heading .badge {
+      font-size: 11px;
+      background: var(--sw-light);
+      color: var(--sw-text-sec);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    /* ══════════════════════════════════════════════════
+       ACTION SECTIONS (collapsible)
+       ══════════════════════════════════════════════════ */
+    .action-section {
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      box-shadow: var(--sw-shadow);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .action-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sw-text);
+      user-select: none;
+    }
+    .action-header:hover { background: var(--sw-light); }
+    .action-header .count-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: #fff;
+      min-width: 22px;
+      text-align: center;
+    }
+    .count-badge.red { background: var(--sw-red); }
+    .count-badge.amber { background: var(--sw-yellow); }
+    .count-badge.blue { background: var(--sw-blue); }
+    .count-badge.green { background: var(--sw-green); }
+    .count-badge.grey { background: var(--sw-text-sec); }
+    .action-header .chevron {
+      transition: transform 0.2s;
+      color: var(--sw-text-sec);
+      font-size: 12px;
+    }
+    .action-section.open .action-header .chevron { transform: rotate(180deg); }
+    .action-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .action-section.open .action-body { max-height: 2000px; }
+    .action-body-inner { padding: 0 16px 14px; }
+
+    .action-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--sw-border);
+    }
+    .action-item:last-child { border-bottom: none; }
+    .action-item-info { flex: 1; min-width: 0; }
+    .action-item-name { font-size: 14px; font-weight: 600; color: var(--sw-text); }
+    .action-item-detail { font-size: 12px; color: var(--sw-text-sec); margin-top: 1px; }
+    .action-item-value { font-size: 13px; font-weight: 600; color: var(--sw-text); font-family: var(--sw-font-num); }
+    .action-item-days {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .days-green { background: rgba(39,174,96,0.1); color: var(--sw-green); }
+    .days-amber { background: rgba(230,126,34,0.1); color: var(--sw-yellow); }
+    .days-red { background: rgba(231,76,60,0.1); color: var(--sw-red); }
+    .action-item-phone {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(39,174,96,0.1);
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .action-item-phone svg { width: 16px; height: 16px; stroke: var(--sw-green); fill: none; stroke-width: 2; }
+
+    /* ══════════════════════════════════════════════════
+       ACTIVITY FEED
+       ══════════════════════════════════════════════════ */
+    .feed-list { list-style: none; }
+    .feed-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--sw-border);
+    }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--sw-light);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 12px;
+    }
+    .feed-body { flex: 1; min-width: 0; }
+    .feed-text { font-size: 13px; color: var(--sw-text); }
+    .feed-text strong { font-weight: 600; }
+    .feed-time { font-size: 11px; color: var(--sw-text-sec); margin-top: 2px; }
+
+    /* ══════════════════════════════════════════════════
+       LOADING + EMPTY + ERROR
+       ══════════════════════════════════════════════════ */
+    .loading-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--sw-text-sec);
+      font-size: 14px;
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--sw-border);
+      border-top-color: var(--sw-orange);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--sw-text-sec);
+      font-size: 14px;
+    }
+    .empty-state svg { width: 48px; height: 48px; fill: var(--sw-border); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto; }
+    .error-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--sw-red);
+      font-size: 14px;
+    }
+    .error-state button { margin-top: 12px; }
+
+    /* ══════════════════════════════════════════════════
+       ADMIN SALESPERSON DROPDOWN
+       ══════════════════════════════════════════════════ */
+    .admin-filter {
+      margin-bottom: 16px;
+      display: none;
+    }
+    .admin-filter.show { display: block; }
+    .admin-filter select {
+      padding: 8px 12px;
+      border: 1px solid var(--sw-border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: var(--sw-font);
+      background: var(--sw-card);
+      color: var(--sw-text);
+      min-width: 200px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       PIPELINE — KANBAN
+       ══════════════════════════════════════════════════ */
+    .pipeline-total {
+      font-size: 14px;
+      color: var(--sw-text-sec);
+      margin-bottom: 16px;
+    }
+    .pipeline-total strong {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--sw-text);
+      font-family: var(--sw-font-num);
+    }
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .filter-chip {
+      padding: 6px 14px;
+      border: 1px solid var(--sw-border);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--sw-card);
+      color: var(--sw-text);
+      font-family: var(--sw-font);
+      transition: all 0.15s;
+    }
+    .filter-chip.active { background: var(--sw-orange); color: #fff; border-color: var(--sw-orange); }
+    .filter-chip:hover:not(.active) { background: var(--sw-light); }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      min-height: 400px;
+    }
+    @media (max-width: 768px) {
+      .kanban {
+        grid-template-columns: repeat(4, 280px);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 8px;
+      }
+      .kanban-col { scroll-snap-align: start; }
+    }
+    .kanban-col {
+      background: var(--sw-light);
+      border-radius: var(--sw-radius);
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+    .kanban-header {
+      padding: 12px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #fff;
+      border-radius: var(--sw-radius) var(--sw-radius) 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kanban-header .col-count {
+      font-size: 11px;
+      background: rgba(255,255,255,0.25);
+      padding: 1px 7px;
+      border-radius: 8px;
+    }
+    .kanban-header.blue { background: var(--sw-blue); }
+    .kanban-header.orange { background: var(--sw-orange); }
+    .kanban-header.green { background: var(--sw-green); }
+    .kanban-header.red { background: var(--sw-red); }
+    .kanban-body {
+      flex: 1;
+      padding: 8px;
+      overflow-y: auto;
+      max-height: 600px;
+    }
+    .kanban-card {
+      background: var(--sw-card);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      box-shadow: var(--sw-shadow);
+      cursor: pointer;
+      border-left: 3px solid var(--sw-green);
+      transition: box-shadow 0.15s;
+    }
+    .kanban-card:hover { box-shadow: var(--sw-shadow-hover); }
+    .kanban-card.age-green { border-left-color: var(--sw-green); }
+    .kanban-card.age-amber { border-left-color: var(--sw-yellow); }
+    .kanban-card.age-red { border-left-color: var(--sw-red); }
+    .kanban-card-name { font-size: 14px; font-weight: 600; color: var(--sw-text); }
+    .kanban-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--sw-text-sec);
+    }
+    .type-pill {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 2px 7px;
+      border-radius: 8px;
+    }
+    .type-pill.patio { background: rgba(52,152,219,0.1); color: var(--sw-blue); }
+    .type-pill.fencing { background: rgba(241,90,41,0.1); color: var(--sw-orange); }
+    .type-pill.decking { background: rgba(230,126,34,0.1); color: var(--sw-yellow); }
+    .type-pill.combo { background: rgba(142,68,173,0.1); color: #8E44AD; }
+    .kanban-card-value {
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--sw-font-num);
+      color: var(--sw-text);
+      margin-top: 6px;
+    }
+    .kanban-card-days { font-size: 11px; color: var(--sw-text-sec); margin-top: 4px; }
+    .kanban-collapsed {
+      padding: 12px 14px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--sw-text-sec);
+      cursor: pointer;
+    }
+    .kanban-collapsed:hover { background: rgba(0,0,0,0.02); }
+
+    /* ══════════════════════════════════════════════════
+       DETAIL SLIDE PANEL
+       ══════════════════════════════════════════════════ */
+    .slide-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 199;
+    }
+    .slide-overlay.show { display: block; }
+    .slide-panel {
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100vh;
+      width: 400px;
+      max-width: 100vw;
+      background: var(--sw-card);
+      z-index: 200;
+      box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .slide-panel.show { transform: translateX(0); }
+    @media (max-width: 768px) {
+      .slide-panel { width: 100vw; }
+    }
+    .slide-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--sw-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .slide-header h3 { font-size: 16px; font-weight: 700; }
+    .slide-close {
+      width: 32px; height: 32px;
+      border: none;
+      background: var(--sw-light);
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sw-text-sec);
+    }
+    .slide-body { padding: 16px; flex: 1; }
+    .slide-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--sw-border);
+      font-size: 13px;
+    }
+    .slide-row:last-child { border-bottom: none; }
+    .slide-label { color: var(--sw-text-sec); }
+    .slide-val { font-weight: 600; color: var(--sw-text); text-align: right; }
+    .slide-val a { color: var(--sw-blue); text-decoration: none; }
+    .slide-notes {
+      margin-top: 16px;
+      padding: 12px;
+      background: var(--sw-light);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--sw-text-sec);
+      white-space: pre-wrap;
+    }
+    .slide-actions { padding: 16px; border-top: 1px solid var(--sw-border); }
+    .slide-actions textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--sw-border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: var(--sw-font);
+      resize: vertical;
+      min-height: 60px;
+      margin-bottom: 8px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       PERFORMANCE — KPI + CHARTS
+       ══════════════════════════════════════════════════ */
+    .period-selector {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .period-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--sw-border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--sw-card);
+      color: var(--sw-text);
+      font-family: var(--sw-font);
+      transition: all 0.15s;
+    }
+    .period-btn.active { background: var(--sw-orange); color: #fff; border-color: var(--sw-orange); }
+    .period-btn:hover:not(.active) { background: var(--sw-light); }
+    .custom-dates {
+      display: none;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .custom-dates.show { display: flex; }
+    .custom-dates input[type="date"] {
+      padding: 6px 10px;
+      border: 1px solid var(--sw-border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: var(--sw-font);
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    @media (min-width: 769px) {
+      .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .kpi-card {
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      padding: 14px;
+      box-shadow: var(--sw-shadow);
+      text-align: center;
+    }
+    .kpi-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--sw-text-sec);
+      font-weight: 600;
+    }
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: var(--sw-font-num);
+      color: var(--sw-text);
+      margin-top: 4px;
+    }
+    .kpi-sub { font-size: 11px; color: var(--sw-text-sec); margin-top: 2px; }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (min-width: 769px) {
+      .charts-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .chart-panel {
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      padding: 16px;
+      box-shadow: var(--sw-shadow);
+    }
+    .chart-panel h4 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--sw-text);
+      margin-bottom: 12px;
+    }
+    .chart-wrap { position: relative; width: 100%; }
+    .chart-wrap canvas { width: 100% !important; }
+
+    /* Funnel */
+    .funnel-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .funnel-label { font-size: 12px; font-weight: 600; width: 70px; text-align: right; color: var(--sw-text); }
+    .funnel-track { flex: 1; height: 28px; background: var(--sw-light); border-radius: 6px; position: relative; overflow: hidden; }
+    .funnel-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 700; color: #fff; transition: width 0.5s ease; }
+    .funnel-drop { font-size: 11px; color: var(--sw-text-sec); width: 50px; text-align: left; }
+
+    /* Top suburbs table */
+    .suburbs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .suburbs-table th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--sw-text-sec);
+      font-weight: 600;
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--sw-border);
+    }
+    .suburbs-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--sw-border);
+    }
+    .suburbs-table tr:nth-child(even) td { background: var(--sw-light); }
+
+    /* Leaderboard */
+    .leaderboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .leader-card {
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      padding: 16px;
+      box-shadow: var(--sw-shadow);
+      text-align: center;
+    }
+    .leader-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--sw-light);
+      margin: 0 auto 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: var(--sw-mid);
+    }
+    .leader-name { font-size: 14px; font-weight: 600; }
+    .leader-stat { font-size: 12px; color: var(--sw-text-sec); margin-top: 4px; }
+    .leader-stat strong { color: var(--sw-text); font-family: var(--sw-font-num); }
+    .leader-rank {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sw-orange);
+      margin-bottom: 4px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       LEADS TAB
+       ══════════════════════════════════════════════════ */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 768px) {
+      .filter-bar { flex-wrap: nowrap; }
+    }
+    .filter-bar input,
+    .filter-bar select {
+      padding: 8px 12px;
+      border: 1px solid var(--sw-border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: var(--sw-font);
+      background: var(--sw-card);
+      color: var(--sw-text);
+      min-width: 130px;
+    }
+    .filter-bar input { min-width: 180px; }
+
+    /* Lead cards (mobile) */
+    .lead-cards { display: none; }
+    @media (max-width: 768px) {
+      .lead-cards { display: block; }
+      .lead-table-wrap { display: none; }
+    }
+    .lead-card {
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      box-shadow: var(--sw-shadow);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border-left: 4px solid var(--sw-border);
+    }
+    .lead-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .lead-card-name { font-size: 15px; font-weight: 600; color: var(--sw-text); }
+    .lead-card-suburb { font-size: 12px; color: var(--sw-text-sec); margin-top: 2px; }
+    .lead-card-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; }
+    .lead-card-phone { color: var(--sw-blue); text-decoration: none; font-weight: 600; }
+
+    /* Lead table (desktop) */
+    .lead-table-wrap { overflow-x: auto; }
+    @media (max-width: 768px) {
+      .lead-table-wrap { display: none; }
+    }
+    .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .lead-table th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--sw-text-sec);
+      font-weight: 600;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--sw-border);
+      white-space: nowrap;
+    }
+    .lead-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--sw-border);
+      vertical-align: middle;
+    }
+    .lead-table tr:nth-child(even) td { background: var(--sw-light); }
+    .lead-table tr:hover td { background: rgba(241,90,41,0.04); }
+
+    /* Status + source badges */
+    .status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .status-draft { background: rgba(52,152,219,0.1); color: var(--sw-blue); }
+    .status-quoted { background: rgba(241,90,41,0.1); color: var(--sw-orange); }
+    .status-accepted { background: rgba(39,174,96,0.1); color: var(--sw-green); }
+    .status-cancelled, .status-lost { background: rgba(231,76,60,0.1); color: var(--sw-red); }
+
+    .source-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 8px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .source-google_ads { background: rgba(52,152,219,0.1); color: var(--sw-blue); }
+    .source-organic { background: rgba(39,174,96,0.1); color: var(--sw-green); }
+    .source-referral { background: rgba(142,68,173,0.1); color: #8E44AD; }
+    .source-direct, .source-unknown { background: var(--sw-light); color: var(--sw-text-sec); }
+
+    .utm-text { font-size: 10px; color: var(--sw-text-sec); margin-top: 1px; }
+    .hot-badge {
+      display: inline-block;
+      font-size: 10px;
+      background: rgba(231,76,60,0.1);
+      color: var(--sw-red);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--sw-text-sec);
+    }
+    .pagination-btns { display: flex; gap: 6px; }
+    .pagination-btns button {
+      padding: 6px 14px;
+      border: 1px solid var(--sw-border);
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      background: var(--sw-card);
+      color: var(--sw-text);
+      font-family: var(--sw-font);
+    }
+    .pagination-btns button:disabled { opacity: 0.4; cursor: default; }
+    .pagination-btns button:hover:not(:disabled) { background: var(--sw-light); }
+
+    /* ══════════════════════════════════════════════════
+       TOAST
+       ══════════════════════════════════════════════════ */
+    .toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: var(--sw-dark);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 300;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error { background: var(--sw-red); }
+    .toast.success { background: var(--sw-green); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     TOAST
+     ══════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════
+     HEADER
+     ══════════════════════════════════════════════════ -->
+<div class="header" id="mainHeader" style="display:none">
+  <div class="header-left">
+    <div class="header-brand">SecureWorks <span>Sale</span></div>
+    <div class="header-nav">
+      <button data-view="today" onclick="showView('today')" class="active">Today</button>
+      <button data-view="pipeline" onclick="showView('pipeline')">Pipeline</button>
+      <button data-view="performance" onclick="showView('performance')">Stats</button>
+      <button data-view="leads" onclick="showView('leads')">Leads</button>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="header-user" id="headerUser"></span>
+    <button class="btn-header" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     BOTTOM NAV (mobile)
+     ══════════════════════════════════════════════════ -->
+<div class="bottom-nav" id="bottomNav">
+  <button data-view="today" onclick="showView('today')" class="active">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg>
+    Today
+  </button>
+  <button data-view="pipeline" onclick="showView('pipeline')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1" fill="currentColor"/><rect x="10" y="8" width="5" height="13" rx="1" fill="currentColor"/><rect x="17" y="5" width="5" height="16" rx="1" fill="currentColor"/></svg>
+    Pipeline
+  </button>
+  <button data-view="performance" onclick="showView('performance')">
+    <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Stats
+  </button>
+  <button data-view="leads" onclick="showView('leads')">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    Leads
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     LOGIN VIEW
+     ══════════════════════════════════════════════════ -->
+<div id="viewLogin" class="view active">
+  <div class="login-box">
+    <h2>SecureWorks Sale</h2>
+    <p>Sales Performance Dashboard</p>
+    <input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email">
+    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    <button class="btn btn-primary" id="btnLogin" onclick="doLogin()">Log In</button>
+    <div id="loginError" style="display:none;padding:12px;background:#fdeaea;border-radius:8px;color:var(--sw-red);font-size:14px;font-weight:600;margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TODAY VIEW
+     ══════════════════════════════════════════════════ -->
+<div id="viewToday" class="view">
+  <div class="container">
+    <div class="admin-filter" id="adminFilterToday">
+      <select id="spFilterToday" onchange="loadToday()">
+        <option value="">All Salespeople</option>
+      </select>
+    </div>
+    <div id="todayContent">
+      <div class="loading-state"><div class="spinner"></div>Loading your dashboard...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PIPELINE VIEW
+     ══════════════════════════════════════════════════ -->
+<div id="viewPipeline" class="view">
+  <div class="container-wide">
+    <div class="admin-filter" id="adminFilterPipeline">
+      <select id="spFilterPipeline" onchange="loadPipeline()">
+        <option value="">All Salespeople</option>
+      </select>
+    </div>
+    <div id="pipelineContent">
+      <div class="loading-state"><div class="spinner"></div>Loading pipeline...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PERFORMANCE VIEW
+     ══════════════════════════════════════════════════ -->
+<div id="viewPerformance" class="view">
+  <div class="container-wide">
+    <div class="admin-filter" id="adminFilterPerformance">
+      <select id="spFilterPerformance" onchange="loadPerformance()">
+        <option value="">All Salespeople</option>
+      </select>
+    </div>
+    <div id="performanceContent">
+      <div class="loading-state"><div class="spinner"></div>Loading stats...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     LEADS VIEW
+     ══════════════════════════════════════════════════ -->
+<div id="viewLeads" class="view">
+  <div class="container-wide">
+    <div class="admin-filter" id="adminFilterLeads">
+      <select id="spFilterLeads" onchange="loadLeads()">
+        <option value="">All Salespeople</option>
+      </select>
+    </div>
+    <div id="leadsContent">
+      <div class="loading-state"><div class="spinner"></div>Loading leads...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE PANEL (Job detail)
+     ══════════════════════════════════════════════════ -->
+<div class="slide-overlay" id="slideOverlay" onclick="closeSlide()"></div>
+<div class="slide-panel" id="slidePanel">
+  <div class="slide-header">
+    <h3 id="slideName">—</h3>
+    <button class="slide-close" onclick="closeSlide()">&times;</button>
+  </div>
+  <div class="slide-body" id="slideBody"></div>
+  <div class="slide-actions" id="slideActions">
+    <textarea id="slideNote" placeholder="Log an activity note..."></textarea>
+    <button class="btn btn-primary btn-small" onclick="submitNote()">Log Activity</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════════════ -->
+<script>
+(function() {
+
+  // ─── Globals ───
+  var cloud = null;
+  var _user = null;
+  var _isAdmin = false;
+  var _currentView = 'today';
+  var _salespeople = [];
+  var _initRetries = 0;
+  var _maxRetries = 25;
+  var _slideJobId = null;
+  var _leadsPage = 1;
+  var _leadsPerPage = 25;
+  var _leadsTotal = 0;
+  var _searchDebounce = null;
+  var _chartWeekly = null;
+  var _chartType = null;
+  var _pipelineTypeFilter = 'all';
+  var _performancePeriod = 'this_month';
+  var _customFrom = '';
+  var _customTo = '';
+  var _lostExpanded = false;
+
+  var REPORT_API = window.SUPABASE_URL + '/functions/v1/reporting-api';
+  var OPS_API = window.SUPABASE_URL + '/functions/v1/ops-api';
+
+  // ─── Utility Functions ───
+  function fmtCurrency(n) {
+    return '$' + (n || 0).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  function fmtDaysAgo(dateStr) {
+    if (!dateStr) return '\u2014';
+    var days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return '1 day';
+    return days + ' days';
+  }
+
+  function daysCount(dateStr) {
+    if (!dateStr) return 0;
+    return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+  }
+
+  function relativeTime(dateStr) {
+    if (!dateStr) return '';
+    var mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    var days = Math.floor(hrs / 24);
+    return days + 'd ago';
+  }
+
+  function daysClass(days) {
+    if (days < 7) return 'days-green';
+    if (days <= 14) return 'days-amber';
+    return 'days-red';
+  }
+
+  function ageClass(days) {
+    if (days < 7) return 'age-green';
+    if (days <= 14) return 'age-amber';
+    return 'age-red';
+  }
+
+  function statusBadge(status) {
+    var s = (status || 'draft').toLowerCase().replace(/\s+/g, '_');
+    var labels = { draft: 'New', quoted: 'Quoted', accepted: 'Won', cancelled: 'Lost', lost: 'Lost' };
+    return '<span class="status-badge status-' + s + '">' + (labels[s] || s) + '</span>';
+  }
+
+  function sourceBadge(source) {
+    var s = (source || 'unknown').toLowerCase().replace(/\s+/g, '_');
+    var labels = { google_ads: 'Google Ads', organic: 'Organic', referral: 'Referral', direct: 'Direct', unknown: 'Unknown' };
+    return '<span class="source-badge source-' + s + '">' + (labels[s] || s) + '</span>';
+  }
+
+  function typePill(type) {
+    var t = (type || '').toLowerCase();
+    if (t.indexOf('fenc') !== -1) return '<span class="type-pill fencing">Fence</span>';
+    if (t.indexOf('deck') !== -1) return '<span class="type-pill decking">Deck</span>';
+    if (t.indexOf('combo') !== -1) return '<span class="type-pill combo">Combo</span>';
+    return '<span class="type-pill patio">Patio</span>';
+  }
+
+  function phoneIcon() {
+    return '<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+  }
+
+  function friendlyError(err) {
+    if (!err) return 'Unknown error';
+    var msg = err.message || String(err);
+    if (msg.indexOf('fetch') !== -1 || msg.indexOf('network') !== -1) return 'Network error — check your connection';
+    if (msg.indexOf('401') !== -1 || msg.indexOf('403') !== -1) return 'Session expired — please log in again';
+    return msg;
+  }
+
+  function toast(msg, type) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast' + (type ? ' ' + type : '');
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, 3000);
+  }
+
+  function getSpFilter() {
+    var selId = 'spFilter' + _currentView.charAt(0).toUpperCase() + _currentView.slice(1);
+    var sel = document.getElementById(selId);
+    return (sel && sel.value) ? sel.value : '';
+  }
+
+  // ─── API Helper ───
+  function saleFetch(action, params) {
+    params = params || {};
+    var qs = new URLSearchParams({ action: action });
+    Object.keys(params).forEach(function(k) {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '') {
+        qs.set(k, params[k]);
+      }
+    });
+    if (!_isAdmin && _user) qs.set('salesperson_id', _user.id);
+    var sp = getSpFilter();
+    if (_isAdmin && sp) qs.set('salesperson_id', sp);
+    return fetch(REPORT_API + '?' + qs.toString()).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    });
+  }
+
+  function opsFetch(action, params) {
+    params = params || {};
+    var qs = new URLSearchParams({ action: action });
+    Object.keys(params).forEach(function(k) {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '') {
+        qs.set(k, params[k]);
+      }
+    });
+    return fetch(OPS_API + '?' + qs.toString()).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    });
+  }
+
+  // ─── Auth ───
+  window.doLogin = function() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var password = document.getElementById('loginPassword').value;
+    if (!email || !password) {
+      showLoginError('Please enter your email and password');
+      return;
+    }
+    var btn = document.getElementById('btnLogin');
+    btn.disabled = true;
+    btn.textContent = 'Logging in...';
+    hideLoginError();
+
+    cloud.auth.signInWithPassword(email, password).then(function() {
+      // onLogin fires via auth:login event
+    }).catch(function(err) {
+      var msg = (err && err.message) || String(err);
+      if (msg.indexOf('Invalid login') !== -1 || msg.indexOf('invalid') !== -1) {
+        showLoginError('Wrong email or password \u2014 try again');
+      } else {
+        showLoginError(friendlyError(err));
+      }
+      btn.disabled = false;
+      btn.textContent = 'Log In';
+    });
+  };
+
+  function showLoginError(msg) {
+    var el = document.getElementById('loginError');
+    if (el) { el.textContent = msg; el.style.display = 'block'; }
+  }
+  function hideLoginError() {
+    var el = document.getElementById('loginError');
+    if (el) el.style.display = 'none';
+  }
+
+  document.getElementById('loginEmail').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+  });
+  document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  window.doLogout = function() {
+    if (cloud && cloud.supabase) {
+      cloud.supabase.auth.signOut();
+    }
+  };
+
+  function onLogin(profile) {
+    _user = profile;
+    if (!_user) { console.error('[sale] onLogin: profile is null!'); return; }
+    _isAdmin = (_user.email && _user.email.indexOf('marnin') !== -1) || _user.role === 'admin';
+
+    document.getElementById('headerUser').textContent = _user.name || _user.email;
+    document.getElementById('mainHeader').style.display = 'flex';
+    document.getElementById('bottomNav').classList.add('show');
+    document.getElementById('viewLogin').classList.remove('active');
+
+    if (_isAdmin) {
+      loadSalespeople();
+      document.querySelectorAll('.admin-filter').forEach(function(el) { el.classList.add('show'); });
+    }
+
+    var saved = localStorage.getItem('sw_sale_tab');
+    showView(saved || 'today');
+  }
+
+  function loadSalespeople() {
+    opsFetch('list_users').then(function(data) {
+      var users = data.users || data || [];
+      _salespeople = users;
+      var opts = '<option value="">All Salespeople</option>';
+      users.forEach(function(u) {
+        opts += '<option value="' + u.id + '">' + (u.name || u.email) + '</option>';
+      });
+      document.querySelectorAll('.admin-filter select').forEach(function(sel) {
+        sel.innerHTML = opts;
+      });
+    }).catch(function(err) {
+      console.error('Failed to load salespeople:', err);
+    });
+  }
+
+  // ─── View switching ───
+  window.showView = function(view) {
+    _currentView = view;
+    document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+    document.querySelectorAll('.bottom-nav button, .header-nav button').forEach(function(b) { b.classList.remove('active'); });
+
+    var el = document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1));
+    if (el) el.classList.add('active');
+    document.querySelectorAll('[data-view="' + view + '"]').forEach(function(b) { b.classList.add('active'); });
+    localStorage.setItem('sw_sale_tab', view);
+
+    if (view === 'today') loadToday();
+    if (view === 'pipeline') loadPipeline();
+    if (view === 'performance') loadPerformance();
+    if (view === 'leads') loadLeads();
+  };
+
+  // ══════════════════════════════════════════════════
+  // TODAY TAB
+  // ══════════════════════════════════════════════════
+  window.loadToday = function() {
+    var container = document.getElementById('todayContent');
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading your dashboard...</div>';
+
+    Promise.all([
+      saleFetch('sale_today_stats'),
+      saleFetch('sale_actions'),
+      saleFetch('sale_activity_feed', { limit: 10 })
+    ]).then(function(results) {
+      var stats = results[0] || {};
+      var actions = results[1] || {};
+      var feed = results[2] || {};
+      renderToday(stats, actions, feed);
+    }).catch(function(err) {
+      container.innerHTML = '<div class="error-state"><p>Failed to load dashboard</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadToday()" style="margin-top:12px">Retry</button></div>';
+    });
+  };
+
+  function renderToday(stats, actions, feed) {
+    var container = document.getElementById('todayContent');
+    var closeRate = stats.close_rate || 0;
+    var closeColor = closeRate >= 40 ? 'green' : 'amber';
+
+    var html = '';
+
+    // Stat cards
+    html += '<div class="stat-grid">';
+    html += '<div class="stat-card border-orange"><div class="stat-icon orange"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-body"><div class="stat-label">Quotes Sent</div><div class="stat-value">' + (stats.quotes_sent || 0) + '</div><div class="stat-sub">worth ' + fmtCurrency(stats.quotes_value) + '</div></div></div>';
+    html += '<div class="stat-card border-green"><div class="stat-icon green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">Jobs Booked</div><div class="stat-value">' + (stats.jobs_booked || 0) + '</div><div class="stat-sub">worth ' + fmtCurrency(stats.booked_value) + '</div></div></div>';
+    html += '<div class="stat-card border-blue"><div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-body"><div class="stat-label">My Leads</div><div class="stat-value">' + (stats.my_leads || 0) + '</div><div class="stat-sub">oldest: ' + fmtDaysAgo(stats.oldest_lead_date) + '</div></div></div>';
+    html += '<div class="stat-card border-' + closeColor + '"><div class="stat-icon ' + closeColor + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-body"><div class="stat-label">Close Rate</div><div class="stat-value">' + closeRate + '%</div><div class="stat-sub">this month</div></div></div>';
+    html += '</div>';
+
+    // Actions
+    html += '<div class="section-heading">My Actions Today</div>';
+
+    var needsContact = actions.needs_first_contact || [];
+    var followUps = actions.follow_ups_due || [];
+    var scopesToday = actions.scope_visits_today || [];
+    var quotesExpiring = actions.quotes_expiring || [];
+
+    html += renderActionSection('Needs First Contact', needsContact, 'red');
+    html += renderActionSection('Follow-ups Due', followUps, 'amber');
+    html += renderActionSection('Scope Visits Today', scopesToday, 'blue');
+    html += renderActionSection('Quotes Expiring', quotesExpiring, 'red');
+
+    // Activity feed
+    var feedItems = feed.events || feed.items || [];
+    if (feedItems.length > 0) {
+      html += '<div class="section-heading">Recent Activity</div>';
+      html += '<div style="background:var(--sw-card);border-radius:var(--sw-radius);box-shadow:var(--sw-shadow);padding:4px 16px">';
+      html += '<ul class="feed-list">';
+      feedItems.forEach(function(item) {
+        var icon = '\u2022';
+        if (item.type === 'quote_sent') icon = '\uD83D\uDCE4';
+        else if (item.type === 'job_accepted' || item.type === 'accepted') icon = '\u2705';
+        else if (item.type === 'scope_completed') icon = '\uD83D\uDCCD';
+        else if (item.type === 'note_added') icon = '\uD83D\uDCDD';
+        else if (item.type === 'lead_created') icon = '\u2795';
+        html += '<li class="feed-item"><div class="feed-icon">' + icon + '</div><div class="feed-body"><div class="feed-text">' + (item.description || item.text || '\u2014') + '</div><div class="feed-time">' + relativeTime(item.created_at || item.timestamp) + '</div></div></li>';
+      });
+      html += '</ul></div>';
+    }
+
+    if (needsContact.length === 0 && followUps.length === 0 && scopesToday.length === 0 && quotesExpiring.length === 0 && feedItems.length === 0) {
+      html += '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 14s1.5 2 4 2 4-2 4-2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="9" y1="9" x2="9.01" y2="9" stroke="currentColor" stroke-width="2"/><line x1="15" y1="9" x2="15.01" y2="9" stroke="currentColor" stroke-width="2"/></svg><p>No quotes sent yet \u2014 time to hit the phones!</p></div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  function renderActionSection(title, items, color) {
+    var count = items.length;
+    var open = count > 0 ? ' open' : '';
+    var html = '<div class="action-section' + open + '" onclick="this.classList.toggle(\'open\')">';
+    html += '<div class="action-header"><span>' + title + '</span><span style="display:flex;align-items:center;gap:8px"><span class="count-badge ' + (count > 0 ? color : 'grey') + '">' + count + '</span><span class="chevron">\u25BC</span></span></div>';
+    html += '<div class="action-body" onclick="event.stopPropagation()"><div class="action-body-inner">';
+
+    if (count === 0) {
+      html += '<div style="padding:12px 0;color:var(--sw-text-sec);font-size:13px;text-align:center">All clear here</div>';
+    } else {
+      items.forEach(function(item) {
+        var days = daysCount(item.created_at || item.date);
+        var dCls = daysClass(days);
+        var phone = item.phone || item.client_phone || '';
+        html += '<div class="action-item">';
+        html += '<div class="action-item-info"><div class="action-item-name">' + (item.client_name || '\u2014') + '</div><div class="action-item-detail">' + (item.suburb || '') + (item.type ? ' \u00B7 ' + item.type : '') + '</div></div>';
+        if (item.quote_value || item.value) {
+          html += '<div class="action-item-value">' + fmtCurrency(item.quote_value || item.value) + '</div>';
+        }
+        html += '<span class="action-item-days ' + dCls + '">' + fmtDaysAgo(item.created_at || item.date) + '</span>';
+        if (phone) {
+          html += '<a class="action-item-phone" href="tel:' + phone.replace(/\s/g, '') + '">' + phoneIcon() + '</a>';
+        }
+        html += '</div>';
+      });
+    }
+
+    html += '</div></div></div>';
+    return html;
+  }
+
+  // ══════════════════════════════════════════════════
+  // PIPELINE TAB
+  // ══════════════════════════════════════════════════
+  window.loadPipeline = function() {
+    var container = document.getElementById('pipelineContent');
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading pipeline...</div>';
+
+    saleFetch('sale_pipeline').then(function(data) {
+      renderPipeline(data);
+    }).catch(function(err) {
+      container.innerHTML = '<div class="error-state"><p>Failed to load pipeline</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadPipeline()" style="margin-top:12px">Retry</button></div>';
+    });
+  };
+
+  function renderPipeline(data) {
+    var container = document.getElementById('pipelineContent');
+    var jobs = data.jobs || data.leads || data || [];
+    if (!Array.isArray(jobs)) jobs = [];
+
+    // Filter by type
+    var filtered = _pipelineTypeFilter === 'all' ? jobs : jobs.filter(function(j) {
+      var t = (j.type || j.job_type || '').toLowerCase();
+      if (_pipelineTypeFilter === 'patio') return t.indexOf('patio') !== -1 || t.indexOf('carport') !== -1;
+      if (_pipelineTypeFilter === 'fencing') return t.indexOf('fenc') !== -1;
+      if (_pipelineTypeFilter === 'decking') return t.indexOf('deck') !== -1;
+      return true;
+    });
+
+    var totalValue = 0;
+    filtered.forEach(function(j) { totalValue += (j.quote_value || j.value || 0); });
+
+    var cols = {
+      draft: [],
+      quoted: [],
+      accepted: [],
+      cancelled: []
+    };
+
+    filtered.forEach(function(j) {
+      var s = (j.status || 'draft').toLowerCase();
+      if (s === 'lost') s = 'cancelled';
+      if (cols[s]) cols[s].push(j);
+      else cols.draft.push(j);
+    });
+
+    var html = '';
+    html += '<div class="pipeline-total">Pipeline value: <strong>' + fmtCurrency(totalValue) + '</strong></div>';
+
+    // Filter chips
+    html += '<div class="filter-chips">';
+    ['all', 'patio', 'fencing', 'decking'].forEach(function(t) {
+      var label = t.charAt(0).toUpperCase() + t.slice(1);
+      if (t === 'all') label = 'All';
+      html += '<button class="filter-chip' + (_pipelineTypeFilter === t ? ' active' : '') + '" onclick="setPipelineFilter(\'' + t + '\')">' + label + '</button>';
+    });
+    html += '</div>';
+
+    // Kanban
+    html += '<div class="kanban">';
+    html += renderKanbanCol('New Lead', cols.draft, 'blue');
+    html += renderKanbanCol('Quote Sent', cols.quoted, 'orange');
+    html += renderKanbanCol('Won', cols.accepted, 'green');
+    html += renderKanbanColCollapsible('Lost', cols.cancelled, 'red');
+    html += '</div>';
+
+    container.innerHTML = html;
+  }
+
+  function renderKanbanCol(title, items, color) {
+    var html = '<div class="kanban-col">';
+    html += '<div class="kanban-header ' + color + '"><span>' + title + '</span><span class="col-count">' + items.length + '</span></div>';
+    html += '<div class="kanban-body">';
+    if (items.length === 0) {
+      html += '<div style="padding:24px;text-align:center;color:var(--sw-text-sec);font-size:12px">No jobs</div>';
+    } else {
+      items.forEach(function(j) {
+        var days = daysCount(j.stage_entered_at || j.updated_at || j.created_at);
+        html += '<div class="kanban-card ' + ageClass(days) + '" onclick="openSlide(\'' + (j.id || '') + '\')">';
+        html += '<div class="kanban-card-name">' + (j.client_name || '\u2014') + '</div>';
+        html += '<div class="kanban-card-meta">' + (j.suburb || '') + ' ' + typePill(j.type || j.job_type) + '</div>';
+        if (j.quote_value || j.value) {
+          html += '<div class="kanban-card-value">' + fmtCurrency(j.quote_value || j.value) + '</div>';
+        }
+        html += '<div class="kanban-card-days">' + fmtDaysAgo(j.stage_entered_at || j.updated_at || j.created_at) + ' in stage</div>';
+        html += '</div>';
+      });
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  function renderKanbanColCollapsible(title, items, color) {
+    var html = '<div class="kanban-col">';
+    html += '<div class="kanban-header ' + color + '"><span>' + title + '</span><span class="col-count">' + items.length + '</span></div>';
+    if (!_lostExpanded) {
+      html += '<div class="kanban-collapsed" onclick="expandLost()">' + items.length + ' lost jobs \u2014 tap to expand</div>';
+    } else {
+      html += '<div class="kanban-body">';
+      if (items.length === 0) {
+        html += '<div style="padding:24px;text-align:center;color:var(--sw-text-sec);font-size:12px">No lost jobs</div>';
+      } else {
+        items.forEach(function(j) {
+          var days = daysCount(j.stage_entered_at || j.updated_at || j.created_at);
+          html += '<div class="kanban-card ' + ageClass(days) + '" onclick="openSlide(\'' + (j.id || '') + '\')">';
+          html += '<div class="kanban-card-name">' + (j.client_name || '\u2014') + '</div>';
+          html += '<div class="kanban-card-meta">' + (j.suburb || '') + ' ' + typePill(j.type || j.job_type) + '</div>';
+          if (j.quote_value || j.value) html += '<div class="kanban-card-value">' + fmtCurrency(j.quote_value || j.value) + '</div>';
+          html += '<div class="kanban-card-days">' + fmtDaysAgo(j.stage_entered_at || j.updated_at || j.created_at) + '</div>';
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  window.setPipelineFilter = function(type) {
+    _pipelineTypeFilter = type;
+    loadPipeline();
+  };
+
+  window.expandLost = function() {
+    _lostExpanded = true;
+    loadPipeline();
+  };
+
+  // ─── Slide Panel ───
+  window.openSlide = function(jobId) {
+    if (!jobId) return;
+    _slideJobId = jobId;
+    document.getElementById('slideName').textContent = 'Loading...';
+    document.getElementById('slideBody').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+    document.getElementById('slideNote').value = '';
+    document.getElementById('slideOverlay').classList.add('show');
+    document.getElementById('slidePanel').classList.add('show');
+
+    saleFetch('sale_job_detail', { job_id: jobId }).then(function(data) {
+      var j = data.job || data || {};
+      document.getElementById('slideName').textContent = j.client_name || '\u2014';
+      var body = '';
+      body += '<div class="slide-row"><span class="slide-label">Phone</span><span class="slide-val"><a href="tel:' + (j.phone || j.client_phone || '').replace(/\s/g, '') + '">' + (j.phone || j.client_phone || '\u2014') + '</a></span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Email</span><span class="slide-val">' + (j.email || j.client_email || '\u2014') + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Address</span><span class="slide-val">' + (j.address || j.suburb || '\u2014') + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Type</span><span class="slide-val">' + typePill(j.type || j.job_type) + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Status</span><span class="slide-val">' + statusBadge(j.status) + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Quote Value</span><span class="slide-val">' + fmtCurrency(j.quote_value || j.value) + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Created</span><span class="slide-val">' + fmtDaysAgo(j.created_at) + ' ago</span></div>';
+      if (j.notes) {
+        body += '<div class="slide-notes">' + j.notes + '</div>';
+      }
+      document.getElementById('slideBody').innerHTML = body;
+    }).catch(function(err) {
+      document.getElementById('slideBody').innerHTML = '<div class="error-state">' + friendlyError(err) + '</div>';
+    });
+  };
+
+  window.closeSlide = function() {
+    document.getElementById('slideOverlay').classList.remove('show');
+    document.getElementById('slidePanel').classList.remove('show');
+    _slideJobId = null;
+  };
+
+  window.submitNote = function() {
+    var text = document.getElementById('slideNote').value.trim();
+    if (!text || !_slideJobId) return;
+
+    var qs = new URLSearchParams({
+      action: 'add_event',
+      job_id: _slideJobId,
+      text: text,
+      user_id: _user ? _user.id : ''
+    });
+
+    fetch(OPS_API + '?' + qs.toString(), { method: 'POST' }).then(function(res) {
+      if (!res.ok) throw new Error('API error');
+      document.getElementById('slideNote').value = '';
+      toast('Activity logged', 'success');
+    }).catch(function(err) {
+      toast('Failed to log activity: ' + friendlyError(err), 'error');
+    });
+  };
+
+  // ══════════════════════════════════════════════════
+  // PERFORMANCE TAB
+  // ══════════════════════════════════════════════════
+  window.loadPerformance = function() {
+    var container = document.getElementById('performanceContent');
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading stats...</div>';
+
+    var params = { period: _performancePeriod };
+    if (_performancePeriod === 'custom' && _customFrom && _customTo) {
+      params.from = _customFrom;
+      params.to = _customTo;
+    }
+
+    Promise.all([
+      saleFetch('sale_performance', params),
+      saleFetch('sale_weekly_trend'),
+      saleFetch('sale_by_type', params),
+      saleFetch('sale_funnel', params),
+      saleFetch('sale_top_suburbs', params),
+      _isAdmin ? saleFetch('sale_leaderboard', params) : Promise.resolve(null)
+    ]).then(function(results) {
+      var kpis = results[0] || {};
+      var weekly = results[1] || {};
+      var byType = results[2] || {};
+      var funnel = results[3] || {};
+      var suburbs = results[4] || {};
+      var leaderboard = results[5];
+      renderPerformance(kpis, weekly, byType, funnel, suburbs, leaderboard);
+    }).catch(function(err) {
+      container.innerHTML = '<div class="error-state"><p>Failed to load stats</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadPerformance()" style="margin-top:12px">Retry</button></div>';
+    });
+  };
+
+  window.setPeriod = function(period) {
+    _performancePeriod = period;
+    if (period !== 'custom') {
+      _customFrom = '';
+      _customTo = '';
+    }
+    loadPerformance();
+  };
+
+  window.applyCustomDates = function() {
+    var from = document.getElementById('perfDateFrom');
+    var to = document.getElementById('perfDateTo');
+    if (from && to && from.value && to.value) {
+      _customFrom = from.value;
+      _customTo = to.value;
+      _performancePeriod = 'custom';
+      loadPerformance();
+    }
+  };
+
+  function renderPerformance(kpis, weekly, byType, funnel, suburbs, leaderboard) {
+    var container = document.getElementById('performanceContent');
+    var html = '';
+
+    // Period selector
+    html += '<div class="period-selector">';
+    ['this_week', 'this_month', 'last_month', 'custom'].forEach(function(p) {
+      var labels = { this_week: 'This Week', this_month: 'This Month', last_month: 'Last Month', custom: 'Custom' };
+      html += '<button class="period-btn' + (_performancePeriod === p ? ' active' : '') + '" onclick="setPeriod(\'' + p + '\')">' + labels[p] + '</button>';
+    });
+    html += '<div class="custom-dates' + (_performancePeriod === 'custom' ? ' show' : '') + '" id="customDatesWrap"><input type="date" id="perfDateFrom" value="' + _customFrom + '"> <span>to</span> <input type="date" id="perfDateTo" value="' + _customTo + '"> <button class="btn btn-small btn-primary" onclick="applyCustomDates()">Go</button></div>';
+    html += '</div>';
+
+    // KPI cards
+    html += '<div class="kpi-grid">';
+    html += '<div class="kpi-card"><div class="kpi-label">Total Quoted</div><div class="kpi-value">' + (kpis.total_quoted_count || 0) + '</div><div class="kpi-sub">' + fmtCurrency(kpis.total_quoted_value) + '</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-label">Total Booked</div><div class="kpi-value">' + (kpis.total_booked_count || 0) + '</div><div class="kpi-sub">' + fmtCurrency(kpis.total_booked_value) + '</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-label">Close Rate</div><div class="kpi-value">' + (kpis.close_rate || 0) + '%</div><div class="kpi-sub">&nbsp;</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-label">Avg Job Value</div><div class="kpi-value">' + fmtCurrency(kpis.avg_job_value) + '</div><div class="kpi-sub">&nbsp;</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-label">Avg Lead\u2192Quote</div><div class="kpi-value">' + (kpis.avg_lead_to_quote_days || 0) + 'd</div><div class="kpi-sub">&nbsp;</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-label">Avg Quote\u2192Accept</div><div class="kpi-value">' + (kpis.avg_quote_to_accepted_days || 0) + 'd</div><div class="kpi-sub">&nbsp;</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-label">Revenue</div><div class="kpi-value">' + fmtCurrency(kpis.revenue) + '</div><div class="kpi-sub">invoiced</div></div>';
+    html += '</div>';
+
+    // Charts
+    html += '<div class="charts-grid">';
+
+    // Weekly trend chart
+    html += '<div class="chart-panel"><h4>Weekly Trend</h4><div class="chart-wrap"><canvas id="chartWeekly" height="220"></canvas></div></div>';
+
+    // By type chart
+    html += '<div class="chart-panel"><h4>By Job Type</h4><div class="chart-wrap" style="max-width:280px;margin:0 auto"><canvas id="chartType" height="280"></canvas></div></div>';
+
+    // Funnel
+    var funnelData = funnel.stages || funnel || [];
+    html += '<div class="chart-panel"><h4>Sales Funnel</h4>';
+    if (Array.isArray(funnelData) && funnelData.length > 0) {
+      var maxFunnel = funnelData[0].count || 1;
+      funnelData.forEach(function(stage, i) {
+        var pct = Math.round(((stage.count || 0) / maxFunnel) * 100);
+        var colors = ['var(--sw-blue)', 'var(--sw-mid)', 'var(--sw-orange)', 'var(--sw-green)'];
+        var drop = i > 0 ? Math.round(((1 - (stage.count || 0) / (funnelData[i - 1].count || 1)) * 100)) + '% drop' : '';
+        html += '<div class="funnel-bar"><span class="funnel-label">' + (stage.label || stage.name || '') + '</span><div class="funnel-track"><div class="funnel-fill" style="width:' + Math.max(pct, 5) + '%;background:' + (colors[i] || colors[0]) + '">' + (stage.count || 0) + '</div></div><span class="funnel-drop">' + drop + '</span></div>';
+      });
+    } else {
+      html += '<div style="padding:24px;text-align:center;color:var(--sw-text-sec);font-size:13px">No funnel data available</div>';
+    }
+    html += '</div>';
+
+    // Top suburbs
+    var suburbData = suburbs.suburbs || suburbs || [];
+    html += '<div class="chart-panel"><h4>Top Suburbs</h4>';
+    if (Array.isArray(suburbData) && suburbData.length > 0) {
+      html += '<table class="suburbs-table"><thead><tr><th>Suburb</th><th>Leads</th><th>Conv %</th><th>Avg Value</th></tr></thead><tbody>';
+      suburbData.slice(0, 10).forEach(function(s) {
+        html += '<tr><td>' + (s.suburb || '\u2014') + '</td><td>' + (s.leads || s.count || 0) + '</td><td>' + (s.conversion_rate || 0) + '%</td><td>' + fmtCurrency(s.avg_value) + '</td></tr>';
+      });
+      html += '</tbody></table>';
+    } else {
+      html += '<div style="padding:24px;text-align:center;color:var(--sw-text-sec);font-size:13px">No suburb data available</div>';
+    }
+    html += '</div>';
+
+    html += '</div>'; // end charts-grid
+
+    // Leaderboard (admin only)
+    if (_isAdmin && leaderboard) {
+      var leaders = leaderboard.salespeople || leaderboard || [];
+      if (Array.isArray(leaders) && leaders.length > 0) {
+        html += '<div class="section-heading" style="margin-top:24px">Leaderboard</div>';
+        html += '<div class="leaderboard">';
+        leaders.sort(function(a, b) { return (b.booked_value || 0) - (a.booked_value || 0); });
+        leaders.forEach(function(sp, i) {
+          var initials = (sp.name || sp.email || '?').split(' ').map(function(w) { return w.charAt(0); }).join('').toUpperCase().slice(0, 2);
+          html += '<div class="leader-card">';
+          html += '<div class="leader-rank">#' + (i + 1) + '</div>';
+          html += '<div class="leader-avatar">' + initials + '</div>';
+          html += '<div class="leader-name">' + (sp.name || sp.email || '\u2014') + '</div>';
+          html += '<div class="leader-stat">Booked: <strong>' + fmtCurrency(sp.booked_value) + '</strong></div>';
+          html += '<div class="leader-stat">Close rate: <strong>' + (sp.close_rate || 0) + '%</strong></div>';
+          html += '<div class="leader-stat">Avg deal: <strong>' + fmtCurrency(sp.avg_deal_size) + '</strong></div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+    }
+
+    container.innerHTML = html;
+
+    // Render charts after DOM update
+    setTimeout(function() { renderCharts(weekly, byType); }, 50);
+  }
+
+  function renderCharts(weekly, byType) {
+    // Weekly trend
+    var weeklyCanvas = document.getElementById('chartWeekly');
+    if (weeklyCanvas) {
+      if (_chartWeekly) { _chartWeekly.destroy(); _chartWeekly = null; }
+      var weeks = weekly.weeks || weekly || [];
+      var labels = [];
+      var quotedData = [];
+      var bookedData = [];
+      if (Array.isArray(weeks)) {
+        weeks.slice(-8).forEach(function(w) {
+          labels.push(w.label || w.week || '');
+          quotedData.push(w.quoted || w.quoted_count || 0);
+          bookedData.push(w.booked || w.booked_count || 0);
+        });
+      }
+      _chartWeekly = new Chart(weeklyCanvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Quoted', data: quotedData, backgroundColor: 'rgba(241,90,41,0.7)', borderRadius: 4 },
+            { label: 'Booked', data: bookedData, backgroundColor: 'rgba(39,174,96,0.7)', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 12 } } } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+            x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // By type doughnut
+    var typeCanvas = document.getElementById('chartType');
+    if (typeCanvas) {
+      if (_chartType) { _chartType.destroy(); _chartType = null; }
+      var types = byType.types || byType || [];
+      var typeLabels = [];
+      var typeValues = [];
+      var typeColors = [];
+      var colorMap = { patio: 'rgba(52,152,219,0.8)', fencing: 'rgba(241,90,41,0.8)', decking: 'rgba(230,126,34,0.8)', combo: 'rgba(142,68,173,0.8)' };
+      if (Array.isArray(types)) {
+        types.forEach(function(t) {
+          var key = (t.type || t.label || 'other').toLowerCase();
+          typeLabels.push(t.type || t.label || 'Other');
+          typeValues.push(t.count || t.value || 0);
+          typeColors.push(colorMap[key] || 'rgba(124,136,152,0.5)');
+        });
+      }
+      if (typeLabels.length === 0) {
+        typeLabels = ['No data'];
+        typeValues = [1];
+        typeColors = ['rgba(234,237,240,1)'];
+      }
+      _chartType = new Chart(typeCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: typeLabels,
+          datasets: [{ data: typeValues, backgroundColor: typeColors, borderWidth: 0 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 12 } } } }
+        }
+      });
+    }
+  }
+
+  // ══════════════════════════════════════════════════
+  // LEADS TAB
+  // ══════════════════════════════════════════════════
+  window.loadLeads = function() {
+    var container = document.getElementById('leadsContent');
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading leads...</div>';
+
+    var params = {
+      page: _leadsPage,
+      per_page: _leadsPerPage
+    };
+
+    // Get filter values if they exist in the DOM
+    var searchEl = document.getElementById('leadSearch');
+    var statusEl = document.getElementById('leadStatus');
+    var sourceEl = document.getElementById('leadSource');
+    var sortEl = document.getElementById('leadSort');
+    if (searchEl && searchEl.value) params.search = searchEl.value;
+    if (statusEl && statusEl.value) params.status = statusEl.value;
+    if (sourceEl && sourceEl.value) params.source = sourceEl.value;
+    if (sortEl && sortEl.value) params.sort = sortEl.value;
+
+    saleFetch('sale_leads', params).then(function(data) {
+      renderLeads(data, params);
+    }).catch(function(err) {
+      container.innerHTML = '<div class="error-state"><p>Failed to load leads</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadLeads()" style="margin-top:12px">Retry</button></div>';
+    });
+  };
+
+  function renderLeads(data, params) {
+    var container = document.getElementById('leadsContent');
+    var leads = data.leads || data.jobs || data || [];
+    if (!Array.isArray(leads)) leads = [];
+    _leadsTotal = data.total || leads.length;
+
+    var hotSuburbs = data.hot_suburbs || ['Joondalup', 'Wanneroo', 'Baldivis', 'Ellenbrook', 'Byford'];
+
+    var html = '';
+
+    // Filter bar
+    html += '<div class="filter-bar">';
+    html += '<input type="text" id="leadSearch" placeholder="Search name or suburb..." value="' + (params.search || '') + '" oninput="debounceLeadSearch()">';
+    html += '<select id="leadStatus" onchange="resetLeadsPage(); loadLeads()"><option value="">All Status</option><option value="draft"' + (params.status === 'draft' ? ' selected' : '') + '>Draft</option><option value="quoted"' + (params.status === 'quoted' ? ' selected' : '') + '>Quoted</option><option value="accepted"' + (params.status === 'accepted' ? ' selected' : '') + '>Accepted</option><option value="cancelled"' + (params.status === 'cancelled' ? ' selected' : '') + '>Lost</option></select>';
+    html += '<select id="leadSource" onchange="resetLeadsPage(); loadLeads()"><option value="">All Sources</option><option value="google_ads"' + (params.source === 'google_ads' ? ' selected' : '') + '>Google Ads</option><option value="organic"' + (params.source === 'organic' ? ' selected' : '') + '>Organic</option><option value="referral"' + (params.source === 'referral' ? ' selected' : '') + '>Referral</option><option value="direct"' + (params.source === 'direct' ? ' selected' : '') + '>Direct</option><option value="unknown"' + (params.source === 'unknown' ? ' selected' : '') + '>Unknown</option></select>';
+    html += '<select id="leadSort" onchange="resetLeadsPage(); loadLeads()"><option value="newest"' + (params.sort === 'newest' ? ' selected' : '') + '>Newest</option><option value="oldest"' + (params.sort === 'oldest' ? ' selected' : '') + '>Oldest</option><option value="value_high"' + (params.sort === 'value_high' ? ' selected' : '') + '>Value (high)</option><option value="value_low"' + (params.sort === 'value_low' ? ' selected' : '') + '>Value (low)</option></select>';
+    html += '</div>';
+
+    if (leads.length === 0) {
+      html += '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><p>No leads matching your filters</p></div>';
+      container.innerHTML = html;
+      return;
+    }
+
+    // Mobile cards
+    html += '<div class="lead-cards">';
+    leads.forEach(function(l) {
+      var days = daysCount(l.created_at);
+      var dCls = daysClass(days);
+      var isHot = hotSuburbs.indexOf(l.suburb) !== -1;
+      var borderColor = (l.status || 'draft') === 'accepted' ? 'var(--sw-green)' : (l.status === 'quoted' ? 'var(--sw-orange)' : (l.status === 'cancelled' ? 'var(--sw-red)' : 'var(--sw-blue)'));
+      html += '<div class="lead-card" style="border-left-color:' + borderColor + '" onclick="openSlide(\'' + (l.id || '') + '\')">';
+      html += '<div class="lead-card-top"><div><div class="lead-card-name">' + (l.client_name || '\u2014') + (isHot ? ' <span class="hot-badge">HOT</span>' : '') + '</div><div class="lead-card-suburb">' + (l.suburb || '') + '</div></div>' + statusBadge(l.status) + '</div>';
+      html += '<div class="lead-card-row"><span>' + sourceBadge(l.source || l.lead_source) + '</span><span class="action-item-days ' + dCls + '">' + fmtDaysAgo(l.created_at) + '</span></div>';
+      html += '<div class="lead-card-row">';
+      if (l.phone || l.client_phone) html += '<a class="lead-card-phone" href="tel:' + (l.phone || l.client_phone || '').replace(/\s/g, '') + '">' + (l.phone || l.client_phone) + '</a>';
+      else html += '<span></span>';
+      html += '<span style="font-weight:600;font-family:var(--sw-font-num)">' + fmtCurrency(l.quote_value || l.value) + '</span>';
+      html += '</div>';
+      if (l.utm_campaign) html += '<div class="utm-text">' + l.utm_campaign + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    // Desktop table
+    html += '<div class="lead-table-wrap"><table class="lead-table"><thead><tr><th>Client</th><th>Phone</th><th>Suburb</th><th>Source</th><th>Date</th><th>Status</th><th>Days</th><th>Value</th></tr></thead><tbody>';
+    leads.forEach(function(l) {
+      var days = daysCount(l.created_at);
+      var dCls = daysClass(days);
+      var isHot = hotSuburbs.indexOf(l.suburb) !== -1;
+      var phone = l.phone || l.client_phone || '';
+      html += '<tr style="cursor:pointer" onclick="openSlide(\'' + (l.id || '') + '\')">';
+      html += '<td><strong>' + (l.client_name || '\u2014') + '</strong>' + (isHot ? ' <span class="hot-badge">HOT</span>' : '') + '</td>';
+      html += '<td>' + (phone ? '<a href="tel:' + phone.replace(/\s/g, '') + '" style="color:var(--sw-blue);text-decoration:none">' + phone + '</a>' : '\u2014') + '</td>';
+      html += '<td>' + (l.suburb || '\u2014') + '</td>';
+      html += '<td>' + sourceBadge(l.source || l.lead_source) + (l.utm_campaign ? '<div class="utm-text">' + l.utm_campaign + '</div>' : '') + '</td>';
+      html += '<td style="white-space:nowrap">' + (l.created_at ? new Date(l.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : '\u2014') + '</td>';
+      html += '<td>' + statusBadge(l.status) + '</td>';
+      html += '<td><span class="action-item-days ' + dCls + '">' + fmtDaysAgo(l.created_at) + '</span></td>';
+      html += '<td style="font-weight:600;font-family:var(--sw-font-num);white-space:nowrap">' + fmtCurrency(l.quote_value || l.value) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // Pagination
+    var start = ((_leadsPage - 1) * _leadsPerPage) + 1;
+    var end = Math.min(_leadsPage * _leadsPerPage, _leadsTotal);
+    html += '<div class="pagination">';
+    html += '<span>Showing ' + start + '\u2013' + end + ' of ' + _leadsTotal + '</span>';
+    html += '<div class="pagination-btns">';
+    html += '<button onclick="prevLeadsPage()"' + (_leadsPage <= 1 ? ' disabled' : '') + '>Prev</button>';
+    html += '<button onclick="nextLeadsPage()"' + (end >= _leadsTotal ? ' disabled' : '') + '>Next</button>';
+    html += '</div></div>';
+
+    container.innerHTML = html;
+  }
+
+  window.debounceLeadSearch = function() {
+    clearTimeout(_searchDebounce);
+    _searchDebounce = setTimeout(function() {
+      _leadsPage = 1;
+      loadLeads();
+    }, 400);
+  };
+
+  window.resetLeadsPage = function() {
+    _leadsPage = 1;
+  };
+
+  window.prevLeadsPage = function() {
+    if (_leadsPage > 1) {
+      _leadsPage--;
+      loadLeads();
+    }
+  };
+
+  window.nextLeadsPage = function() {
+    var maxPage = Math.ceil(_leadsTotal / _leadsPerPage);
+    if (_leadsPage < maxPage) {
+      _leadsPage++;
+      loadLeads();
+    }
+  };
+
+  // ══════════════════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════════════════
+  function initApp() {
+    cloud = window.SECUREWORKS_CLOUD;
+    if (!cloud) {
+      _initRetries++;
+      if (_initRetries >= _maxRetries) {
+        var loginSub = document.querySelector('.login-box p');
+        if (loginSub) loginSub.textContent = 'Failed to load \u2014 please refresh the page';
+        return;
+      }
+      setTimeout(initApp, 200);
+      return;
+    }
+
+    cloud.on('auth:login', function(profile) {
+      onLogin(profile);
+    });
+
+    cloud.on('auth:logout', function() {
+      _user = null;
+      _isAdmin = false;
+      document.getElementById('mainHeader').style.display = 'none';
+      document.getElementById('bottomNav').classList.remove('show');
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      document.getElementById('viewLogin').classList.add('active');
+      document.querySelectorAll('.admin-filter').forEach(function(el) { el.classList.remove('show'); });
+    });
+
+    if (cloud.auth.isLoggedIn() && cloud.auth.getUser()) {
+      onLogin(cloud.auth.getUser());
+    }
+  }
+
+  setTimeout(initApp, 100);
+
+})();
+</script>
+</body>
+</html>
