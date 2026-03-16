@@ -1,3 +1,22 @@
+<!--
+  ════════════════════════════════════════════════════════════
+  SecureWorks — Secure Sale — Sales Performance Dashboard
+  ════════════════════════════════════════════════════════════
+
+  TODO (Phase 2): Embed GHL Conversations API — per-lead SMS/email thread + send from dashboard
+  TODO (Phase 2): Speed-to-lead tracking — log first contact timestamp, show response time metric
+  TODO (Phase 2): AI chat sidebar — sales-specific tools (search leads, draft follow-ups, pipeline analysis)
+  TODO (Phase 3): GHL lead management — create leads, update stages, trigger automations from Sale
+  TODO (Phase 3): Google Ads metrics integration — show cost per lead and ROAS alongside lead source
+  TODO (Separate): AI voice agent for inbound lead response (Sameday AI or similar, not embedded in dashboard)
+
+  EDGE FUNCTION TODOs (ghl-proxy):
+  TODO: ghl-proxy?action=get_conversation — takes contactId, returns last 30 messages from GHL Conversations API
+        Implementation: GET /conversations/search?contactId=XXX then GET /conversations/{id}/messages
+        Returns: array of { id, type (SMS/EMAIL/CALL), direction (inbound/outbound), body, timestamp, sender_name }
+  TODO: ghl-proxy?action=initiate_call — future, GHL calling API bridge for routing calls through virtual number
+  TODO: Verify send_sms logs the message as a job_event with sender user_id
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -694,6 +713,130 @@
       margin-bottom: 8px;
     }
 
+    /* ── Client Chat ── */
+    .chat-section { border-top: 1px solid var(--sw-border); margin-top: 16px; padding-top: 12px; }
+    .chat-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px;
+    }
+    .chat-header h4 { font-size: 14px; font-weight: 700; color: var(--sw-text); margin: 0; }
+    .chat-header-actions { display: flex; gap: 8px; }
+    .chat-header-actions button, .chat-header-actions a {
+      font-size: 12px; padding: 4px 10px; border-radius: 6px;
+      border: 1px solid var(--sw-border); background: var(--sw-light);
+      color: var(--sw-text); cursor: pointer; text-decoration: none;
+      font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .chat-header-actions .call-btn { background: var(--sw-green); color: #fff; border-color: var(--sw-green); }
+    .chat-related { font-size: 11px; color: var(--sw-text-sec); margin-bottom: 8px; }
+    .chat-thread {
+      max-height: 400px; overflow-y: auto; padding: 8px 4px;
+      display: flex; flex-direction: column; gap: 8px;
+      background: var(--sw-bg); border-radius: 8px;
+    }
+    .chat-load-more {
+      text-align: center; padding: 6px;
+    }
+    .chat-load-more button {
+      font-size: 11px; padding: 4px 12px; border-radius: 6px;
+      border: 1px solid var(--sw-border); background: var(--sw-card);
+      color: var(--sw-text-sec); cursor: pointer;
+    }
+    .chat-msg {
+      max-width: 80%; padding: 8px 12px; border-radius: 12px;
+      font-size: 13px; line-height: 1.4; word-break: break-word;
+    }
+    .chat-msg.inbound {
+      align-self: flex-start; background: var(--sw-light); color: var(--sw-text);
+      border-bottom-left-radius: 4px;
+    }
+    .chat-msg.outbound {
+      align-self: flex-end; background: var(--sw-orange); color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .chat-msg .msg-body { margin-bottom: 2px; }
+    .chat-msg .msg-meta {
+      font-size: 10px; opacity: 0.7;
+    }
+    .chat-msg.outbound .msg-meta { text-align: right; }
+    .chat-msg.call-log {
+      align-self: center; background: transparent; color: var(--sw-text-sec);
+      font-style: italic; font-size: 12px; text-align: center; max-width: 90%;
+    }
+    .chat-compose { margin-top: 8px; }
+    .chat-template-row { margin-bottom: 6px; }
+    .chat-template-row select {
+      width: 100%; padding: 6px 10px; border: 1px solid var(--sw-border);
+      border-radius: 6px; font-size: 12px; background: var(--sw-card);
+      font-family: var(--sw-font);
+    }
+    .chat-input-row { display: flex; gap: 6px; align-items: flex-end; }
+    .chat-input-row textarea {
+      flex: 1; padding: 8px 10px; border: 1px solid var(--sw-border);
+      border-radius: 8px; font-size: 14px; font-family: var(--sw-font);
+      resize: none; min-height: 40px; max-height: 80px;
+    }
+    .chat-input-row textarea:focus { border-color: var(--sw-orange); outline: none; }
+    .chat-send-btn {
+      padding: 8px 14px; background: var(--sw-orange); color: #fff;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; white-space: nowrap; min-height: 40px;
+    }
+    .chat-send-btn:disabled { opacity: 0.5; cursor: default; }
+    .chat-char-count { font-size: 10px; color: var(--sw-text-sec); text-align: right; margin-top: 2px; }
+    .chat-email-link {
+      display: inline-block; font-size: 12px; color: var(--sw-blue);
+      cursor: pointer; margin-top: 6px; text-decoration: underline;
+    }
+    .chat-fallback {
+      padding: 16px; text-align: center; color: var(--sw-text-sec);
+      font-size: 13px;
+    }
+    .chat-fallback a { color: var(--sw-blue); text-decoration: none; }
+
+    /* ── Call Log Prompt ── */
+    .call-log-prompt {
+      padding: 12px; background: var(--sw-light); border-radius: 8px;
+      margin-top: 8px;
+    }
+    .call-log-prompt p { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .call-log-prompt textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--sw-border);
+      border-radius: 6px; font-size: 13px; font-family: var(--sw-font);
+      resize: vertical; min-height: 50px; margin-bottom: 6px;
+    }
+    .call-log-prompt .btn-row { display: flex; gap: 6px; }
+
+    /* ── Email Modal ── */
+    .email-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 300;
+      justify-content: center; align-items: center;
+    }
+    .email-modal-overlay.show { display: flex; }
+    .email-modal {
+      background: var(--sw-card); border-radius: var(--sw-radius);
+      width: 90%; max-width: 480px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .email-modal-header {
+      padding: 16px; border-bottom: 1px solid var(--sw-border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .email-modal-header h4 { font-size: 15px; font-weight: 700; margin: 0; }
+    .email-modal-body { padding: 16px; }
+    .email-modal-body label { font-size: 12px; font-weight: 600; color: var(--sw-text-sec); display: block; margin-bottom: 4px; }
+    .email-modal-body input, .email-modal-body textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--sw-border);
+      border-radius: 8px; font-size: 14px; font-family: var(--sw-font);
+      margin-bottom: 12px;
+    }
+    .email-modal-body textarea { min-height: 120px; resize: vertical; }
+    .email-modal-footer {
+      padding: 12px 16px; border-top: 1px solid var(--sw-border);
+      display: flex; justify-content: flex-end; gap: 8px;
+    }
+
     /* ══════════════════════════════════════════════════
        PERFORMANCE — KPI + CHARTS
        ══════════════════════════════════════════════════ */
@@ -1150,6 +1293,30 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════
+     EMAIL MODAL
+     ══════════════════════════════════════════════════ -->
+<div class="email-modal-overlay" id="emailModalOverlay" onclick="closeEmailModal(event)">
+  <div class="email-modal" onclick="event.stopPropagation()">
+    <div class="email-modal-header">
+      <h4>Send Email</h4>
+      <button class="slide-close" onclick="closeEmailModal()">&times;</button>
+    </div>
+    <div class="email-modal-body">
+      <label>To</label>
+      <input type="text" id="emailTo" readonly>
+      <label>Subject</label>
+      <input type="text" id="emailSubject" placeholder="Subject line...">
+      <label>Body</label>
+      <textarea id="emailBody" placeholder="Write your email..."></textarea>
+    </div>
+    <div class="email-modal-footer">
+      <button class="btn btn-secondary btn-small" onclick="closeEmailModal()">Cancel</button>
+      <button class="btn btn-primary btn-small" id="btnSendEmail" onclick="doSendEmail()">Send Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
      JAVASCRIPT
      ══════════════════════════════════════════════════ -->
 <script>
@@ -1164,6 +1331,11 @@
   var _initRetries = 0;
   var _maxRetries = 25;
   var _slideJobId = null;
+  var _slideContactId = null;
+  var _slideContactData = null; // { client_name, client_phone, client_email, ghl_contact_id, firstName }
+  var _slideCallingPhone = null; // set before tel: link, used by visibilitychange
+  var _conversationCache = {}; // keyed by ghl_contact_id
+  var GHL_PROXY = 'https://kevgrhcjxspbxgovpmfl.supabase.co/functions/v1/ghl-proxy';
   var _leadsPage = 1;
   var _leadsPerPage = 25;
   var _leadsTotal = 0;
@@ -1635,36 +1807,433 @@
   window.openSlide = function(jobId) {
     if (!jobId) return;
     _slideJobId = jobId;
+    _slideContactId = null;
+    _slideContactData = null;
     document.getElementById('slideName').textContent = 'Loading...';
     document.getElementById('slideBody').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
     document.getElementById('slideNote').value = '';
     document.getElementById('slideOverlay').classList.add('show');
     document.getElementById('slidePanel').classList.add('show');
 
-    saleFetch('sale_job_detail', { job_id: jobId }).then(function(data) {
+    // Use ops-api job_detail for full job data including ghl_contact_id
+    fetch(OPS_API + '?action=job_detail&job_id=' + encodeURIComponent(jobId)).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
       var j = data.job || data || {};
-      document.getElementById('slideName').textContent = j.client_name || '\u2014';
+      var phone = j.client_phone || '';
+      var email = j.client_email || '';
+      var name = j.client_name || '\u2014';
+      var firstName = (name.split(' ')[0] || '').trim();
+      var qv = j.pricing_json ? (j.pricing_json.total || j.pricing_json.grandTotal || 0) : 0;
+
+      _slideContactId = j.ghl_contact_id || null;
+      _slideContactData = { client_name: name, client_phone: phone, client_email: email, ghl_contact_id: _slideContactId, firstName: firstName, job_id: jobId };
+
+      document.getElementById('slideName').textContent = name;
+
       var body = '';
-      body += '<div class="slide-row"><span class="slide-label">Phone</span><span class="slide-val"><a href="tel:' + (j.phone || j.client_phone || '').replace(/\s/g, '') + '">' + (j.phone || j.client_phone || '\u2014') + '</a></span></div>';
-      body += '<div class="slide-row"><span class="slide-label">Email</span><span class="slide-val">' + (j.email || j.client_email || '\u2014') + '</span></div>';
-      body += '<div class="slide-row"><span class="slide-label">Address</span><span class="slide-val">' + (j.address || j.suburb || '\u2014') + '</span></div>';
-      body += '<div class="slide-row"><span class="slide-label">Type</span><span class="slide-val">' + typePill(j.type || j.job_type) + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Phone</span><span class="slide-val"><a href="tel:' + phone.replace(/\s/g, '') + '" onclick="startCall(\'' + phone.replace(/'/g, '') + '\')">' + (phone || '\u2014') + '</a></span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Email</span><span class="slide-val">' + (email || '\u2014') + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Address</span><span class="slide-val">' + (j.site_address || j.site_suburb || '\u2014') + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Type</span><span class="slide-val">' + typePill(j.type) + '</span></div>';
       body += '<div class="slide-row"><span class="slide-label">Status</span><span class="slide-val">' + statusBadge(j.status) + '</span></div>';
-      body += '<div class="slide-row"><span class="slide-label">Quote Value</span><span class="slide-val">' + fmtCurrency(j.quote_value || j.value) + '</span></div>';
+      body += '<div class="slide-row"><span class="slide-label">Quote Value</span><span class="slide-val">' + fmtCurrency(qv) + '</span></div>';
       body += '<div class="slide-row"><span class="slide-label">Created</span><span class="slide-val">' + fmtDaysAgo(j.created_at) + ' ago</span></div>';
       if (j.notes) {
-        body += '<div class="slide-notes">' + j.notes + '</div>';
+        body += '<div class="slide-notes">' + escHtml(j.notes) + '</div>';
       }
+
+      // ── Client Messages (Chat) Section ──
+      body += buildChatSection(j);
+
       document.getElementById('slideBody').innerHTML = body;
+
+      // Load conversation if we have a GHL contact
+      if (_slideContactId) {
+        loadConversation(_slideContactId, false);
+      }
     }).catch(function(err) {
       document.getElementById('slideBody').innerHTML = '<div class="error-state">' + friendlyError(err) + '</div>';
     });
+  };
+
+  function escHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ── Build the chat section HTML ──
+  function buildChatSection(job) {
+    if (!job.ghl_contact_id) {
+      return '<div class="chat-section"><div class="chat-fallback">No GHL contact linked \u2014 chat unavailable</div></div>';
+    }
+
+    var phone = job.client_phone || '';
+    var name = job.client_name || '';
+    var html = '<div class="chat-section">';
+    html += '<div class="chat-header">';
+    html += '  <h4>Client Messages</h4>';
+    html += '  <div class="chat-header-actions">';
+    // TODO: Future — route through GHL virtual number via ghl-proxy?action=initiate_call
+    html += '    <a href="tel:' + phone.replace(/\s/g, '') + '" class="call-btn" onclick="startCall(\'' + phone.replace(/'/g, '') + '\')">Call</a>';
+    html += '    <button onclick="openEmailModal()">Email</button>';
+    html += '  </div>';
+    html += '</div>';
+    html += '<div class="chat-related" id="chatRelated"></div>';
+    html += '<div class="chat-thread" id="chatThread"><div class="loading-state"><div class="spinner"></div>Loading messages...</div></div>';
+    html += '<div class="chat-compose">';
+    html += '  <div class="chat-template-row"><select id="chatTemplate" onchange="applyTemplate()">';
+    html += '    <option value="">Quick message...</option>';
+    html += '    <option value="followup">Following up on your quote</option>';
+    html += '    <option value="checkin">Checking in — ready to go ahead?</option>';
+    html += '    <option value="expiring">Quote expires in 3 days</option>';
+    html += '    <option value="accepted">Thanks for accepting!</option>';
+    html += '    <option value="custom">Custom message</option>';
+    html += '  </select></div>';
+    html += '  <div class="chat-input-row">';
+    html += '    <textarea id="chatInput" placeholder="Type a message..." maxlength="160" oninput="updateCharCount()"></textarea>';
+    html += '    <button class="chat-send-btn" id="btnSendSms" onclick="doSendSms()">Send</button>';
+    html += '  </div>';
+    html += '  <div class="chat-char-count"><span id="chatCharCount">0</span>/160</div>';
+    html += '  <div><span class="chat-email-link" onclick="openEmailModal()">Send email instead</span></div>';
+    html += '</div>';
+    html += '<div id="callLogPrompt"></div>';
+    html += '</div>';
+    return html;
+  }
+
+  // ── Load conversation from GHL ──
+  // TODO: Requires ghl-proxy?action=get_conversation — takes contactId, returns last 30 messages from GHL Conversations API
+  //       GET /conversations/search?contactId=XXX then GET /conversations/{id}/messages
+  //       Returns: array of { id, type (SMS/EMAIL/CALL), direction (inbound/outbound), body, timestamp, sender_name }
+  function loadConversation(contactId, loadMore) {
+    if (!contactId) return;
+
+    // Check sessionStorage cache
+    var cacheKey = 'sw_conv_' + contactId;
+    if (!loadMore && _conversationCache[contactId]) {
+      renderConversation(_conversationCache[contactId]);
+      return;
+    }
+
+    var thread = document.getElementById('chatThread');
+    if (thread) thread.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading messages...</div>';
+
+    fetch(GHL_PROXY + '?action=get_conversation&contactId=' + encodeURIComponent(contactId)).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
+      var messages = data.messages || data || [];
+      _conversationCache[contactId] = messages;
+      // Cache in sessionStorage
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(messages)); } catch(e) {}
+      renderConversation(messages);
+    }).catch(function(err) {
+      // Graceful degradation — edge function not yet built
+      var thread = document.getElementById('chatThread');
+      if (thread) {
+        var ghlUrl = 'https://app.gohighlevel.com/v2/location/' + contactId;
+        thread.innerHTML = '<div class="chat-fallback">Client messaging coming soon<br><a href="' + ghlUrl + '" target="_blank">View in GHL</a></div>';
+      }
+    });
+
+    // Also check for related jobs with same contact
+    loadRelatedJobs(contactId);
+  }
+
+  function renderConversation(messages) {
+    var thread = document.getElementById('chatThread');
+    if (!thread) return;
+
+    if (!messages || messages.length === 0) {
+      thread.innerHTML = '<div class="chat-fallback">No messages yet \u2014 send the first one!</div>';
+      return;
+    }
+
+    var html = '';
+    // Show load more if we got 30 messages (might be more)
+    if (messages.length >= 30) {
+      html += '<div class="chat-load-more"><button onclick="loadConversation(\'' + (_slideContactId || '') + '\', true)">Load older messages</button></div>';
+    }
+
+    // Messages are newest-first from API, reverse for chronological display
+    var sorted = messages.slice().sort(function(a, b) {
+      return new Date(a.timestamp || a.dateAdded || a.created_at).getTime() - new Date(b.timestamp || b.dateAdded || b.created_at).getTime();
+    });
+
+    sorted.forEach(function(m) {
+      var type = (m.type || '').toUpperCase();
+      var dir = (m.direction || '').toLowerCase();
+      var body = m.body || m.message || '';
+      var ts = m.timestamp || m.dateAdded || m.created_at || '';
+      var sender = m.sender_name || '';
+
+      if (type === 'CALL' || m.messageType === 'call') {
+        // Call log entry
+        var duration = m.duration ? (Math.round(m.duration / 60) + ' min') : '';
+        html += '<div class="chat-msg call-log">Phone call' + (duration ? ' \u2014 ' + duration : '') + ' \u2014 ' + formatMsgTime(ts) + '</div>';
+      } else {
+        // SMS or Email
+        var cls = dir === 'inbound' ? 'inbound' : 'outbound';
+        html += '<div class="chat-msg ' + cls + '">';
+        html += '  <div class="msg-body">' + escHtml(body) + '</div>';
+        html += '  <div class="msg-meta">';
+        if (sender && cls === 'outbound') html += sender + ' \u2022 ';
+        html += formatMsgTime(ts);
+        if (type === 'EMAIL') html += ' \u2022 Email';
+        html += '  </div>';
+        html += '</div>';
+      }
+    });
+
+    thread.innerHTML = html;
+    // Scroll to bottom
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function formatMsgTime(ts) {
+    if (!ts) return '';
+    var d = new Date(ts);
+    var now = new Date();
+    var diffMs = now.getTime() - d.getTime();
+    var diffDays = Math.floor(diffMs / 86400000);
+    var time = d.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit', hour12: true });
+    if (diffDays === 0) return time;
+    if (diffDays === 1) return 'Yesterday ' + time;
+    if (diffDays < 7) return d.toLocaleDateString('en-AU', { weekday: 'short' }) + ' ' + time;
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) + ' ' + time;
+  }
+
+  // Load other jobs for same GHL contact
+  function loadRelatedJobs(contactId) {
+    // We only have the current job — check if the contact has other jobs by searching
+    // This is a nice-to-have; skip if no easy API for it
+    var el = document.getElementById('chatRelated');
+    if (el) el.innerHTML = ''; // Clear for now — would need a dedicated API call
+  }
+
+  // ── SMS Templates ──
+  var _smsTemplates = {
+    followup: 'Hi {firstName}, following up on your quote \u2014 any questions?',
+    checkin: 'Hi {firstName}, just checking in \u2014 are you ready to go ahead?',
+    expiring: 'Hi {firstName}, your quote expires in 3 days \u2014 let me know if you\'d like to proceed',
+    accepted: 'Hi {firstName}, thanks for accepting! We\'ll be in touch about scheduling shortly'
+  };
+
+  window.applyTemplate = function() {
+    var sel = document.getElementById('chatTemplate');
+    var input = document.getElementById('chatInput');
+    if (!sel || !input) return;
+    var key = sel.value;
+    if (key === 'custom' || !key) {
+      input.value = '';
+      input.focus();
+    } else if (_smsTemplates[key]) {
+      var firstName = (_slideContactData && _slideContactData.firstName) || 'there';
+      input.value = _smsTemplates[key].replace(/\{firstName\}/g, firstName);
+    }
+    updateCharCount();
+  };
+
+  window.updateCharCount = function() {
+    var input = document.getElementById('chatInput');
+    var counter = document.getElementById('chatCharCount');
+    if (input && counter) counter.textContent = (input.value || '').length;
+  };
+
+  // ── Send SMS ──
+  window.doSendSms = function() {
+    var input = document.getElementById('chatInput');
+    var btn = document.getElementById('btnSendSms');
+    var message = (input ? input.value.trim() : '');
+    if (!message || !_slideContactId) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    // Optimistic UI — add message immediately
+    var thread = document.getElementById('chatThread');
+    var fallback = thread ? thread.querySelector('.chat-fallback') : null;
+    if (fallback) fallback.remove();
+    if (thread) {
+      var msgEl = document.createElement('div');
+      msgEl.className = 'chat-msg outbound';
+      msgEl.innerHTML = '<div class="msg-body">' + escHtml(message) + '</div><div class="msg-meta">Just now</div>';
+      thread.appendChild(msgEl);
+      thread.scrollTop = thread.scrollHeight;
+    }
+    input.value = '';
+    updateCharCount();
+    document.getElementById('chatTemplate').value = '';
+
+    fetch(GHL_PROXY + '?action=send_sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contactId: _slideContactId,
+        message: message
+      })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
+      if (!data.success) throw new Error(data.error || 'Send failed');
+      toast('Message sent', 'success');
+      btn.disabled = false;
+      btn.textContent = 'Send';
+      // Refresh conversation after 2 seconds to confirm
+      setTimeout(function() {
+        if (_slideContactId) {
+          delete _conversationCache[_slideContactId];
+          loadConversation(_slideContactId, false);
+        }
+      }, 2000);
+    }).catch(function(err) {
+      toast('Message failed to send \u2014 try again', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Send';
+    });
+
+    // Also log as job_event
+    if (_slideJobId) {
+      var qs = new URLSearchParams({
+        action: 'add_event',
+        job_id: _slideJobId,
+        text: 'SMS sent: ' + message.substring(0, 80) + (message.length > 80 ? '...' : ''),
+        user_id: _user ? _user.id : ''
+      });
+      fetch(OPS_API + '?' + qs.toString(), { method: 'POST' }).catch(function() {});
+    }
+  };
+
+  // ── Call handling ──
+  window.startCall = function(phone) {
+    _slideCallingPhone = phone;
+  };
+
+  // When user returns from phone call, prompt for notes
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && _slideCallingPhone && _slideJobId) {
+      var phone = _slideCallingPhone;
+      _slideCallingPhone = null;
+      // Small delay to let the UI settle
+      setTimeout(function() {
+        var el = document.getElementById('callLogPrompt');
+        if (!el) return;
+        el.innerHTML = '<div class="call-log-prompt">' +
+          '<p>Log call notes?</p>' +
+          '<textarea id="callNotes" placeholder="What was discussed..."></textarea>' +
+          '<div class="btn-row">' +
+          '  <button class="btn btn-primary btn-small" onclick="saveCallNotes()">Save Notes</button>' +
+          '  <button class="btn btn-secondary btn-small" onclick="dismissCallLog()">Skip</button>' +
+          '</div></div>';
+      }, 500);
+    }
+  });
+
+  window.saveCallNotes = function() {
+    var notes = document.getElementById('callNotes');
+    var text = notes ? notes.value.trim() : '';
+    if (!text || !_slideJobId) { dismissCallLog(); return; }
+
+    var qs = new URLSearchParams({
+      action: 'add_event',
+      job_id: _slideJobId,
+      text: 'Phone call: ' + text,
+      user_id: _user ? _user.id : ''
+    });
+    fetch(OPS_API + '?' + qs.toString(), { method: 'POST' }).then(function() {
+      toast('Call notes saved', 'success');
+    }).catch(function() {
+      toast('Failed to save call notes', 'error');
+    });
+    dismissCallLog();
+  };
+
+  window.dismissCallLog = function() {
+    var el = document.getElementById('callLogPrompt');
+    if (el) el.innerHTML = '';
+  };
+
+  // ── Email ──
+  window.openEmailModal = function() {
+    if (!_slideContactData) return;
+    document.getElementById('emailTo').value = _slideContactData.client_email || '';
+    document.getElementById('emailSubject').value = '';
+    document.getElementById('emailBody').value = '';
+    document.getElementById('emailModalOverlay').classList.add('show');
+    document.getElementById('emailSubject').focus();
+  };
+
+  window.closeEmailModal = function(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('emailModalOverlay').classList.remove('show');
+  };
+
+  window.doSendEmail = function() {
+    var subject = document.getElementById('emailSubject').value.trim();
+    var body = document.getElementById('emailBody').value.trim();
+    if (!subject || !body || !_slideContactId) {
+      toast('Please fill in subject and body', 'error');
+      return;
+    }
+
+    var btn = document.getElementById('btnSendEmail');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    // Convert plain text body to basic HTML
+    var htmlBody = '<p>' + escHtml(body).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+
+    fetch(GHL_PROXY + '?action=send_email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contactId: _slideContactId,
+        subject: subject,
+        htmlBody: htmlBody
+      })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
+      if (!data.success) throw new Error(data.error || 'Send failed');
+      toast('Email sent', 'success');
+      closeEmailModal();
+      btn.disabled = false;
+      btn.textContent = 'Send Email';
+      // Refresh conversation
+      if (_slideContactId) {
+        delete _conversationCache[_slideContactId];
+        setTimeout(function() { loadConversation(_slideContactId, false); }, 2000);
+      }
+    }).catch(function(err) {
+      toast('Email failed to send \u2014 ' + friendlyError(err), 'error');
+      btn.disabled = false;
+      btn.textContent = 'Send Email';
+    });
+
+    // Log as job_event
+    if (_slideJobId) {
+      var qs = new URLSearchParams({
+        action: 'add_event',
+        job_id: _slideJobId,
+        text: 'Email sent: ' + subject,
+        user_id: _user ? _user.id : ''
+      });
+      fetch(OPS_API + '?' + qs.toString(), { method: 'POST' }).catch(function() {});
+    }
   };
 
   window.closeSlide = function() {
     document.getElementById('slideOverlay').classList.remove('show');
     document.getElementById('slidePanel').classList.remove('show');
     _slideJobId = null;
+    _slideContactId = null;
+    _slideContactData = null;
+    _slideCallingPhone = null;
   };
 
   window.submitNote = function() {
