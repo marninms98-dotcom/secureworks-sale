@@ -11,11 +11,9 @@
   TODO (Separate): AI voice agent for inbound lead response (Sameday AI or similar, not embedded in dashboard)
 
   EDGE FUNCTION TODOs (ghl-proxy):
-  TODO: ghl-proxy?action=get_conversation — takes contactId, returns last 30 messages from GHL Conversations API
-        Implementation: GET /conversations/search?contactId=XXX then GET /conversations/{id}/messages
-        Returns: array of { id, type (SMS/EMAIL/CALL), direction (inbound/outbound), body, timestamp, sender_name }
+  DONE: ghl-proxy?action=get_conversation — deployed, returns last 30 messages
+  DONE: ghl-proxy?action=send_sms — now logs to job_events with jobId + userId
   TODO: ghl-proxy?action=initiate_call — future, GHL calling API bridge for routing calls through virtual number
-  TODO: Verify send_sms logs the message as a job_event with sender user_id
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -2073,7 +2071,9 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contactId: _slideContactId,
-        message: message
+        message: message,
+        jobId: _slideJobId || undefined,
+        userId: _user ? _user.id : undefined
       })
     }).then(function(res) {
       if (!res.ok) throw new Error('API error: ' + res.status);
@@ -2096,16 +2096,7 @@
       btn.textContent = 'Send';
     });
 
-    // Also log as job_event
-    if (_slideJobId) {
-      var qs = new URLSearchParams({
-        action: 'add_event',
-        job_id: _slideJobId,
-        text: 'SMS sent: ' + message.substring(0, 80) + (message.length > 80 ? '...' : ''),
-        user_id: _user ? _user.id : ''
-      });
-      fetch(OPS_API + '?' + qs.toString(), { method: 'POST' }).catch(function() {});
-    }
+    // job_event logging now handled server-side by ghl-proxy send_sms
   };
 
   // ── Call handling ──
