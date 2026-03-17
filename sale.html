@@ -2865,7 +2865,7 @@
     var labels = { quoted: 'Quoted', accepted: 'Won', cancelled: 'Lost' };
     if (!confirm('Change status to ' + (labels[newStatus] || newStatus) + '?')) return;
 
-    fetch(OPS_API + '?action=updateJobStatus', {
+    fetch(OPS_API + '?action=update_job_status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ job_id: jobId, status: newStatus, source: 'sale_dashboard' })
