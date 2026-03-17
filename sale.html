@@ -165,7 +165,7 @@
       transition: all 0.15s;
     }
     .bottom-nav button.active { background: var(--sw-orange); color: #fff; }
-    .bottom-nav button svg { width: 20px; height: 20px; fill: currentColor; }
+    .bottom-nav button svg { width: 18px; height: 18px; fill: currentColor; }
 
     @media (min-width: 769px) {
       .bottom-nav { display: none !important; }
@@ -1146,6 +1146,114 @@
     .toast.show { transform: translateX(-50%) translateY(0); }
     .toast.error { background: var(--sw-red); }
     .toast.success { background: var(--sw-green); }
+
+    /* ══════════════════════════════════════════════════
+       PRIORITY QUEUE (Action tab)
+       ══════════════════════════════════════════════════ */
+    .priority-queue {
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      box-shadow: var(--sw-shadow);
+      overflow: hidden;
+    }
+    .priority-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--sw-border);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .priority-item:last-child { border-bottom: none; }
+    .priority-item:hover { background: var(--sw-light); }
+    .urgency-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .urgency-dot.red { background: var(--sw-red); }
+    .urgency-dot.amber { background: var(--sw-yellow); }
+    .urgency-dot.blue { background: var(--sw-blue); }
+    .urgency-dot.green { background: var(--sw-green); }
+    .priority-info { flex: 1; min-width: 0; }
+    .priority-name { font-size: 14px; font-weight: 600; color: var(--sw-text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .priority-detail { font-size: 12px; color: var(--sw-text-sec); margin-top: 1px; }
+    .priority-value { font-size: 13px; font-weight: 600; font-family: var(--sw-font-num); color: var(--sw-text); white-space: nowrap; }
+
+    /* ══════════════════════════════════════════════════
+       ALERT CARDS (Alerts tab)
+       ══════════════════════════════════════════════════ */
+    .alert-card {
+      background: var(--sw-card);
+      border-radius: var(--sw-radius);
+      box-shadow: var(--sw-shadow);
+      padding: 16px;
+      margin-bottom: 10px;
+      border-left: 4px solid var(--sw-border);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .alert-card.critical { border-left-color: var(--sw-red); }
+    .alert-card.warning { border-left-color: var(--sw-yellow); }
+    .alert-card.info { border-left-color: var(--sw-blue); }
+    .alert-body { flex: 1; min-width: 0; }
+    .alert-title { font-size: 15px; font-weight: 700; color: var(--sw-text); margin-bottom: 4px; }
+    .alert-detail { font-size: 13px; color: var(--sw-text-sec); margin-bottom: 10px; }
+    .alert-actions { display: flex; gap: 8px; align-items: center; }
+    .alert-btn {
+      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; font-family: var(--sw-font);
+    }
+    .alert-btn.primary { background: var(--sw-orange); color: #fff; }
+    .alert-btn.dismiss { background: var(--sw-light); color: var(--sw-text-sec); }
+
+    /* ══════════════════════════════════════════════════
+       SLIDE PANEL STATUS ACTIONS
+       ══════════════════════════════════════════════════ */
+    .slide-status-actions {
+      display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .slide-status-actions button {
+      padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; font-family: var(--sw-font); flex: 1;
+    }
+    .slide-status-actions .btn-quoted { background: rgba(241,90,41,0.1); color: var(--sw-orange); }
+    .slide-status-actions .btn-won { background: rgba(39,174,96,0.1); color: var(--sw-green); }
+    .slide-status-actions .btn-lost { background: rgba(231,76,60,0.1); color: var(--sw-red); }
+    .slide-status-actions .btn-quoted:hover { background: var(--sw-orange); color: #fff; }
+    .slide-status-actions .btn-won:hover { background: var(--sw-green); color: #fff; }
+    .slide-status-actions .btn-lost:hover { background: var(--sw-red); color: #fff; }
+
+    /* Activity timeline in slide panel */
+    .slide-timeline { margin-top: 16px; border-top: 1px solid var(--sw-border); padding-top: 12px; }
+    .slide-timeline h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--sw-text); margin-bottom: 8px; }
+    .timeline-item {
+      display: flex; gap: 10px; padding: 8px 0;
+      border-bottom: 1px solid var(--sw-border); font-size: 13px;
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-icon {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--sw-light); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; font-size: 11px;
+    }
+    .timeline-text { flex: 1; color: var(--sw-text); }
+    .timeline-time { font-size: 11px; color: var(--sw-text-sec); white-space: nowrap; }
+
+    /* Kanban phone button */
+    .kanban-card-phone {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(39,174,96,0.1); text-decoration: none;
+      margin-top: 6px; float: right;
+    }
+    .kanban-card-phone svg { width: 14px; height: 14px; stroke: var(--sw-green); fill: none; stroke-width: 2; }
+
+    /* Velocity stat */
+    .velocity-stat { font-size: 13px; color: var(--sw-text-sec); margin-bottom: 16px; }
+    .velocity-stat strong { color: var(--sw-text); }
   </style>
 </head>
 <body>
@@ -1162,10 +1270,11 @@
   <div class="header-left">
     <div class="header-brand">SecureWorks <span>Sale</span></div>
     <div class="header-nav">
-      <button data-view="today" onclick="showView('today')" class="active">Today</button>
+      <button data-view="action" onclick="showView('action')" class="active">Action</button>
       <button data-view="pipeline" onclick="showView('pipeline')">Pipeline</button>
       <button data-view="performance" onclick="showView('performance')">Stats</button>
       <button data-view="leads" onclick="showView('leads')">Leads</button>
+      <button data-view="alerts" onclick="showView('alerts')">Alerts</button>
     </div>
   </div>
   <div class="header-right">
@@ -1178,9 +1287,9 @@
      BOTTOM NAV (mobile)
      ══════════════════════════════════════════════════ -->
 <div class="bottom-nav" id="bottomNav">
-  <button data-view="today" onclick="showView('today')" class="active">
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg>
-    Today
+  <button data-view="action" onclick="showView('action')" class="active">
+    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Action
   </button>
   <button data-view="pipeline" onclick="showView('pipeline')">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1" fill="currentColor"/><rect x="10" y="8" width="5" height="13" rx="1" fill="currentColor"/><rect x="17" y="5" width="5" height="16" rx="1" fill="currentColor"/></svg>
@@ -1193,6 +1302,10 @@
   <button data-view="leads" onclick="showView('leads')">
     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-width="2"/></svg>
     Leads
+  </button>
+  <button data-view="alerts" onclick="showView('alerts')">
+    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    Alerts
   </button>
 </div>
 
@@ -1213,14 +1326,14 @@
 <!-- ══════════════════════════════════════════════════
      TODAY VIEW
      ══════════════════════════════════════════════════ -->
-<div id="viewToday" class="view">
+<div id="viewAction" class="view">
   <div class="container">
-    <div class="admin-filter" id="adminFilterToday">
-      <select id="spFilterToday" onchange="loadToday()">
+    <div class="admin-filter" id="adminFilterAction">
+      <select id="spFilterAction" onchange="loadAction()">
         <option value="">All Salespeople</option>
       </select>
     </div>
-    <div id="todayContent">
+    <div id="actionContent">
       <div class="loading-state"><div class="spinner"></div>Loading your dashboard...</div>
     </div>
   </div>
@@ -1275,6 +1388,22 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════
+     ALERTS VIEW
+     ══════════════════════════════════════════════════ -->
+<div id="viewAlerts" class="view">
+  <div class="container">
+    <div class="admin-filter" id="adminFilterAlerts">
+      <select id="spFilterAlerts" onchange="loadAlerts()">
+        <option value="">All Salespeople</option>
+      </select>
+    </div>
+    <div id="alertsContent">
+      <div class="loading-state"><div class="spinner"></div>Loading alerts...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
      SLIDE PANEL (Job detail)
      ══════════════════════════════════════════════════ -->
 <div class="slide-overlay" id="slideOverlay" onclick="closeSlide()"></div>
@@ -1324,7 +1453,7 @@
   var cloud = null;
   var _user = null;
   var _isAdmin = false;
-  var _currentView = 'today';
+  var _currentView = 'action';
   var _salespeople = [];
   var _initRetries = 0;
   var _maxRetries = 25;
@@ -1533,7 +1662,8 @@
     }
 
     var saved = localStorage.getItem('sw_sale_tab');
-    showView(saved || 'today');
+    if (saved === 'today') saved = 'action'; // migrate old value
+    showView(saved || 'action');
   }
 
   function loadSalespeople() {
@@ -1563,68 +1693,128 @@
     document.querySelectorAll('[data-view="' + view + '"]').forEach(function(b) { b.classList.add('active'); });
     localStorage.setItem('sw_sale_tab', view);
 
-    if (view === 'today') loadToday();
+    if (view === 'action') loadAction();
     if (view === 'pipeline') loadPipeline();
     if (view === 'performance') loadPerformance();
     if (view === 'leads') loadLeads();
+    if (view === 'alerts') loadAlerts();
   };
 
   // ══════════════════════════════════════════════════
-  // TODAY TAB
+  // ACTION TAB (unified priority queue)
   // ══════════════════════════════════════════════════
-  window.loadToday = function() {
-    var container = document.getElementById('todayContent');
+  window.loadAction = function() {
+    var container = document.getElementById('actionContent');
     container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading your dashboard...</div>';
 
-    saleFetch('sales_summary').then(function(data) {
-      // Map sales_summary response to expected shapes
-      var stats = {
-        quotes_sent: (data.quotes_this_week || {}).count || 0,
-        quotes_value: (data.quotes_this_week || {}).value || 0,
-        jobs_booked: (data.booked_this_week || {}).count || 0,
-        booked_value: (data.booked_this_week || {}).value || 0,
-        my_leads: (data.my_leads || {}).count || 0,
-        oldest_lead_date: null, // not returned directly
-        close_rate: data.close_rate_month || 0
-      };
-      var actions = data.actions || {};
-      var feed = { events: data.recent_activity || [] };
-      renderToday(stats, actions, feed);
+    // Fetch summary + pipeline in parallel for stat strip
+    Promise.all([
+      saleFetch('sales_summary'),
+      saleFetch('sales_pipeline')
+    ]).then(function(results) {
+      var data = results[0];
+      var pipeData = results[1];
+      renderAction(data, pipeData);
     }).catch(function(err) {
-      container.innerHTML = '<div class="error-state"><p>Failed to load dashboard</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadToday()" style="margin-top:12px">Retry</button></div>';
+      container.innerHTML = '<div class="error-state"><p>Failed to load dashboard</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadAction()" style="margin-top:12px">Retry</button></div>';
     });
   };
 
-  function renderToday(stats, actions, feed) {
-    var container = document.getElementById('todayContent');
-    var closeRate = stats.close_rate || 0;
+  function renderAction(data, pipeData) {
+    var container = document.getElementById('actionContent');
+    var quotesWeek = data.quotes_this_week || {};
+    var bookedWeek = data.booked_this_week || {};
+    var closeRate = data.close_rate_month || 0;
     var closeColor = closeRate >= 40 ? 'green' : 'amber';
+    var pipelineValue = pipeData.pipeline_value || 0;
 
     var html = '';
 
-    // Stat cards
+    // Stat strip — 4 compact cards
     html += '<div class="stat-grid">';
-    html += '<div class="stat-card border-orange"><div class="stat-icon orange"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-body"><div class="stat-label">Quotes Sent</div><div class="stat-value">' + (stats.quotes_sent || 0) + '</div><div class="stat-sub">worth ' + fmtCurrency(stats.quotes_value) + '</div></div></div>';
-    html += '<div class="stat-card border-green"><div class="stat-icon green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">Jobs Booked</div><div class="stat-value">' + (stats.jobs_booked || 0) + '</div><div class="stat-sub">worth ' + fmtCurrency(stats.booked_value) + '</div></div></div>';
-    html += '<div class="stat-card border-blue"><div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-body"><div class="stat-label">My Leads</div><div class="stat-value">' + (stats.my_leads || 0) + '</div><div class="stat-sub">oldest: ' + fmtDaysAgo(stats.oldest_lead_date) + '</div></div></div>';
+    html += '<div class="stat-card border-orange"><div class="stat-icon orange"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-body"><div class="stat-label">Quotes This Week</div><div class="stat-value">' + (quotesWeek.count || 0) + '</div><div class="stat-sub">' + fmtCurrency(quotesWeek.value) + '</div></div></div>';
+    html += '<div class="stat-card border-green"><div class="stat-icon green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">Jobs Won</div><div class="stat-value">' + (bookedWeek.count || 0) + '</div><div class="stat-sub">' + fmtCurrency(bookedWeek.value) + '</div></div></div>';
     html += '<div class="stat-card border-' + closeColor + '"><div class="stat-icon ' + closeColor + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-body"><div class="stat-label">Close Rate</div><div class="stat-value">' + closeRate + '%</div><div class="stat-sub">this month</div></div></div>';
+    html += '<div class="stat-card border-blue"><div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="stat-body"><div class="stat-label">Pipeline</div><div class="stat-value">' + fmtCurrency(pipelineValue) + '</div><div class="stat-sub">quoted value</div></div></div>';
     html += '</div>';
 
-    // Actions
-    html += '<div class="section-heading">My Actions Today</div>';
-
+    // Build unified priority queue
+    var actions = data.actions || {};
     var needsContact = actions.needs_first_contact || [];
     var followUps = actions.follow_ups_due || [];
     var scopesToday = actions.scope_visits_today || [];
     var quotesExpiring = actions.quotes_expiring || [];
 
-    html += renderActionSection('Needs First Contact', needsContact, 'red');
-    html += renderActionSection('Follow-ups Due', followUps, 'amber');
-    html += renderActionSection('Scope Visits Today', scopesToday, 'blue');
-    html += renderActionSection('Quotes Expiring', quotesExpiring, 'red');
+    var queue = [];
 
-    // Activity feed
-    var feedItems = feed.events || feed.items || [];
+    // Speed-to-lead (draft > 24h) — critical red
+    needsContact.forEach(function(item) {
+      var days = daysCount(item.created_at || item.date);
+      if (days >= 1) {
+        queue.push({ priority: 1, color: 'red', label: 'Waiting ' + fmtDaysAgo(item.created_at || item.date), item: item });
+      }
+    });
+
+    // Quotes expiring (> 21 days) — critical red
+    quotesExpiring.forEach(function(item) {
+      queue.push({ priority: 2, color: 'red', label: 'Quote expiring', item: item });
+    });
+
+    // Follow-ups due — amber
+    followUps.forEach(function(item) {
+      queue.push({ priority: 3, color: 'amber', label: 'Follow-up due', item: item });
+    });
+
+    // Scope visits today — blue
+    scopesToday.forEach(function(item) {
+      queue.push({ priority: 4, color: 'blue', label: 'Scope today', item: item });
+    });
+
+    // New leads (< 24h) — green
+    needsContact.forEach(function(item) {
+      var days = daysCount(item.created_at || item.date);
+      if (days < 1) {
+        queue.push({ priority: 5, color: 'green', label: 'New lead', item: item });
+      }
+    });
+
+    // Sort by priority
+    queue.sort(function(a, b) { return a.priority - b.priority; });
+
+    var totalActions = queue.length;
+    html += '<div class="section-heading">Priority Queue <span class="badge">' + totalActions + '</span></div>';
+
+    if (queue.length > 0) {
+      html += '<div class="priority-queue">';
+      queue.forEach(function(q) {
+        var item = q.item;
+        var phone = item.phone || item.client_phone || '';
+        var days = daysCount(item.created_at || item.date || item.quoted_at);
+        var dCls = daysClass(days);
+        var jobId = item.job_id || item.id || '';
+        html += '<div class="priority-item" onclick="openSlide(\'' + jobId + '\')">';
+        html += '<span class="urgency-dot ' + q.color + '"></span>';
+        html += '<div class="priority-info"><div class="priority-name">' + (item.client_name || '\u2014') + ' ' + typePill(item.type) + '</div>';
+        html += '<div class="priority-detail">' + (item.suburb || item.site_suburb || '') + ' \u00B7 ' + q.label + '</div></div>';
+        if (item.quote_value || item.value) {
+          html += '<span class="priority-value">' + fmtCurrency(item.quote_value || item.value) + '</span>';
+        }
+        html += '<span class="action-item-days ' + dCls + '">' + fmtDaysAgo(item.created_at || item.date || item.quoted_at) + '</span>';
+        if (phone) {
+          html += '<a class="action-item-phone" href="tel:' + phone.replace(/\s/g, '') + '" onclick="event.stopPropagation()">' + phoneIcon() + '</a>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 14s1.5 2 4 2 4-2 4-2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="9" y1="9" x2="9.01" y2="9" stroke="currentColor" stroke-width="2"/><line x1="15" y1="9" x2="15.01" y2="9" stroke="currentColor" stroke-width="2"/></svg><p>All clear \u2014 pipeline is healthy!</p></div>';
+    }
+
+    // Compact activity feed — last 5, skip scope_saved
+    var feedItems = (data.recent_activity || []).filter(function(item) {
+      return item.type !== 'scope_saved';
+    }).slice(0, 5);
+
     if (feedItems.length > 0) {
       html += '<div class="section-heading">Recent Activity</div>';
       html += '<div style="background:var(--sw-card);border-radius:var(--sw-radius);box-shadow:var(--sw-shadow);padding:4px 16px">';
@@ -1636,47 +1826,14 @@
         else if (item.type === 'scope_completed') icon = '\uD83D\uDCCD';
         else if (item.type === 'note_added') icon = '\uD83D\uDCDD';
         else if (item.type === 'lead_created') icon = '\u2795';
+        else if (item.type === 'sms_sent') icon = '\uD83D\uDCAC';
+        else if (item.type === 'call_logged') icon = '\uD83D\uDCDE';
         html += '<li class="feed-item"><div class="feed-icon">' + icon + '</div><div class="feed-body"><div class="feed-text">' + (item.description || item.text || '\u2014') + '</div><div class="feed-time">' + relativeTime(item.created_at || item.timestamp) + '</div></div></li>';
       });
       html += '</ul></div>';
     }
 
-    if (needsContact.length === 0 && followUps.length === 0 && scopesToday.length === 0 && quotesExpiring.length === 0 && feedItems.length === 0) {
-      html += '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 14s1.5 2 4 2 4-2 4-2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="9" y1="9" x2="9.01" y2="9" stroke="currentColor" stroke-width="2"/><line x1="15" y1="9" x2="15.01" y2="9" stroke="currentColor" stroke-width="2"/></svg><p>No quotes sent yet \u2014 time to hit the phones!</p></div>';
-    }
-
     container.innerHTML = html;
-  }
-
-  function renderActionSection(title, items, color) {
-    var count = items.length;
-    var open = count > 0 ? ' open' : '';
-    var html = '<div class="action-section' + open + '" onclick="this.classList.toggle(\'open\')">';
-    html += '<div class="action-header"><span>' + title + '</span><span style="display:flex;align-items:center;gap:8px"><span class="count-badge ' + (count > 0 ? color : 'grey') + '">' + count + '</span><span class="chevron">\u25BC</span></span></div>';
-    html += '<div class="action-body" onclick="event.stopPropagation()"><div class="action-body-inner">';
-
-    if (count === 0) {
-      html += '<div style="padding:12px 0;color:var(--sw-text-sec);font-size:13px;text-align:center">All clear here</div>';
-    } else {
-      items.forEach(function(item) {
-        var days = daysCount(item.created_at || item.date);
-        var dCls = daysClass(days);
-        var phone = item.phone || item.client_phone || '';
-        html += '<div class="action-item">';
-        html += '<div class="action-item-info"><div class="action-item-name">' + (item.client_name || '\u2014') + '</div><div class="action-item-detail">' + (item.suburb || '') + (item.type ? ' \u00B7 ' + item.type : '') + '</div></div>';
-        if (item.quote_value || item.value) {
-          html += '<div class="action-item-value">' + fmtCurrency(item.quote_value || item.value) + '</div>';
-        }
-        html += '<span class="action-item-days ' + dCls + '">' + fmtDaysAgo(item.created_at || item.date) + '</span>';
-        if (phone) {
-          html += '<a class="action-item-phone" href="tel:' + phone.replace(/\s/g, '') + '">' + phoneIcon() + '</a>';
-        }
-        html += '</div>';
-      });
-    }
-
-    html += '</div></div></div>';
-    return html;
   }
 
   // ══════════════════════════════════════════════════
@@ -1695,37 +1852,39 @@
 
   function renderPipeline(data) {
     var container = document.getElementById('pipelineContent');
-    var jobs = data.jobs || data.leads || data || [];
-    if (!Array.isArray(jobs)) jobs = [];
+
+    // Use columns-based response from API
+    var columns = data.columns || {};
+    var allJobs = [].concat(columns.draft || [], columns.quoted || [], columns.accepted || [], columns.lost || []);
 
     // Filter by type
-    var filtered = _pipelineTypeFilter === 'all' ? jobs : jobs.filter(function(j) {
-      var t = (j.type || j.job_type || '').toLowerCase();
-      if (_pipelineTypeFilter === 'patio') return t.indexOf('patio') !== -1 || t.indexOf('carport') !== -1;
-      if (_pipelineTypeFilter === 'fencing') return t.indexOf('fenc') !== -1;
-      if (_pipelineTypeFilter === 'decking') return t.indexOf('deck') !== -1;
-      return true;
-    });
-
-    var totalValue = 0;
-    filtered.forEach(function(j) { totalValue += (j.quote_value || j.value || 0); });
+    function typeFilter(jobs) {
+      if (_pipelineTypeFilter === 'all') return jobs;
+      return jobs.filter(function(j) {
+        var t = (j.type || '').toLowerCase();
+        if (_pipelineTypeFilter === 'patio') return t.indexOf('patio') !== -1 || t.indexOf('carport') !== -1;
+        if (_pipelineTypeFilter === 'fencing') return t.indexOf('fenc') !== -1;
+        if (_pipelineTypeFilter === 'decking') return t.indexOf('deck') !== -1;
+        return true;
+      });
+    }
 
     var cols = {
-      draft: [],
-      quoted: [],
-      accepted: [],
-      cancelled: []
+      draft: typeFilter(columns.draft || []),
+      quoted: typeFilter(columns.quoted || []),
+      accepted: typeFilter(columns.accepted || []),
+      lost: typeFilter(columns.lost || [])
     };
 
-    filtered.forEach(function(j) {
-      var s = (j.status || 'draft').toLowerCase();
-      if (s === 'lost') s = 'cancelled';
-      if (cols[s]) cols[s].push(j);
-      else cols.draft.push(j);
-    });
+    var totalValue = data.pipeline_value || 0;
+
+    // Calculate velocity from days_in_stage averages
+    var quotedDays = cols.quoted.length > 0 ? Math.round(cols.quoted.reduce(function(s, j) { return s + (j.days_in_stage || 0); }, 0) / cols.quoted.length) : 0;
+    var draftDays = cols.draft.length > 0 ? Math.round(cols.draft.reduce(function(s, j) { return s + (j.days_in_stage || 0); }, 0) / cols.draft.length) : 0;
 
     var html = '';
     html += '<div class="pipeline-total">Pipeline value: <strong>' + fmtCurrency(totalValue) + '</strong></div>';
+    html += '<div class="velocity-stat">Avg <strong>' + draftDays + ' days</strong> lead\u2192quote \u00B7 <strong>' + quotedDays + ' days</strong> quote\u2192accept</div>';
 
     // Filter chips
     html += '<div class="filter-chips">';
@@ -1741,7 +1900,7 @@
     html += renderKanbanCol('New Lead', cols.draft, 'blue');
     html += renderKanbanCol('Quote Sent', cols.quoted, 'orange');
     html += renderKanbanCol('Won', cols.accepted, 'green');
-    html += renderKanbanColCollapsible('Lost', cols.cancelled, 'red');
+    html += renderKanbanColCollapsible('Lost', cols.lost, 'red');
     html += '</div>';
 
     container.innerHTML = html;
@@ -1755,14 +1914,19 @@
       html += '<div style="padding:24px;text-align:center;color:var(--sw-text-sec);font-size:12px">No jobs</div>';
     } else {
       items.forEach(function(j) {
-        var days = daysCount(j.stage_entered_at || j.updated_at || j.created_at);
+        var days = j.days_in_stage || daysCount(j.stage_entered_at || j.updated_at || j.created_at);
+        var phone = j.client_phone || '';
         html += '<div class="kanban-card ' + ageClass(days) + '" onclick="openSlide(\'' + (j.id || '') + '\')">';
         html += '<div class="kanban-card-name">' + (j.client_name || '\u2014') + '</div>';
-        html += '<div class="kanban-card-meta">' + (j.suburb || '') + ' ' + typePill(j.type || j.job_type) + '</div>';
+        html += '<div class="kanban-card-meta">' + (j.site_suburb || j.suburb || '') + ' ' + typePill(j.type || j.job_type) + '</div>';
         if (j.quote_value || j.value) {
-          html += '<div class="kanban-card-value">' + fmtCurrency(j.quote_value || j.value) + '</div>';
+          html += '<div class="kanban-card-value">' + fmtCurrency(j.quote_value || j.value);
+          if (phone) {
+            html += '<a class="kanban-card-phone" href="tel:' + phone.replace(/\s/g, '') + '" onclick="event.stopPropagation()">' + phoneIcon() + '</a>';
+          }
+          html += '</div>';
         }
-        html += '<div class="kanban-card-days">' + fmtDaysAgo(j.stage_entered_at || j.updated_at || j.created_at) + ' in stage</div>';
+        html += '<div class="kanban-card-days">' + days + ' days in stage</div>';
         html += '</div>';
       });
     }
@@ -1781,12 +1945,12 @@
         html += '<div style="padding:24px;text-align:center;color:var(--sw-text-sec);font-size:12px">No lost jobs</div>';
       } else {
         items.forEach(function(j) {
-          var days = daysCount(j.stage_entered_at || j.updated_at || j.created_at);
+          var days = j.days_in_stage || daysCount(j.stage_entered_at || j.updated_at || j.created_at);
           html += '<div class="kanban-card ' + ageClass(days) + '" onclick="openSlide(\'' + (j.id || '') + '\')">';
           html += '<div class="kanban-card-name">' + (j.client_name || '\u2014') + '</div>';
-          html += '<div class="kanban-card-meta">' + (j.suburb || '') + ' ' + typePill(j.type || j.job_type) + '</div>';
+          html += '<div class="kanban-card-meta">' + (j.site_suburb || j.suburb || '') + ' ' + typePill(j.type || j.job_type) + '</div>';
           if (j.quote_value || j.value) html += '<div class="kanban-card-value">' + fmtCurrency(j.quote_value || j.value) + '</div>';
-          html += '<div class="kanban-card-days">' + fmtDaysAgo(j.stage_entered_at || j.updated_at || j.created_at) + '</div>';
+          html += '<div class="kanban-card-days">' + days + ' days</div>';
           html += '</div>';
         });
       }
@@ -1828,7 +1992,8 @@
       var email = j.client_email || '';
       var name = j.client_name || '\u2014';
       var firstName = (name.split(' ')[0] || '').trim();
-      var qv = j.pricing_json ? (j.pricing_json.total || j.pricing_json.grandTotal || 0) : 0;
+      var pj = j.pricing_json || {};
+      var qv = parseFloat(pj.totalIncGST || pj.totalExGST || pj.total || pj.grandTotal || pj.subtotal || 0) || 0;
 
       _slideContactId = j.ghl_contact_id || null;
       _slideContactData = { client_name: name, client_phone: phone, client_email: email, ghl_contact_id: _slideContactId, firstName: firstName, job_id: jobId };
@@ -1836,6 +2001,23 @@
       document.getElementById('slideName').textContent = name;
 
       var body = '';
+
+      // Status change buttons
+      var st = (j.status || 'draft').toLowerCase();
+      body += '<div class="slide-status-actions">';
+      if (st === 'draft') {
+        body += '<button class="btn-quoted" onclick="changeJobStatus(\'' + jobId + '\',\'quoted\')">Mark Quoted</button>';
+        body += '<button class="btn-lost" onclick="changeJobStatus(\'' + jobId + '\',\'cancelled\')">Mark Lost</button>';
+      } else if (st === 'quoted') {
+        body += '<button class="btn-won" onclick="changeJobStatus(\'' + jobId + '\',\'accepted\')">Mark Won</button>';
+        body += '<button class="btn-lost" onclick="changeJobStatus(\'' + jobId + '\',\'cancelled\')">Mark Lost</button>';
+      } else if (st === 'accepted') {
+        body += '<button class="btn-quoted" onclick="changeJobStatus(\'' + jobId + '\',\'quoted\')">Revert to Quoted</button>';
+      } else if (st === 'cancelled') {
+        body += '<button class="btn-quoted" onclick="changeJobStatus(\'' + jobId + '\',\'quoted\')">Reopen as Quoted</button>';
+      }
+      body += '</div>';
+
       body += '<div class="slide-row"><span class="slide-label">Phone</span><span class="slide-val"><a href="tel:' + phone.replace(/\s/g, '') + '" onclick="startCall(\'' + phone.replace(/'/g, '') + '\')">' + (phone || '\u2014') + '</a></span></div>';
       body += '<div class="slide-row"><span class="slide-label">Email</span><span class="slide-val">' + (email || '\u2014') + '</span></div>';
       body += '<div class="slide-row"><span class="slide-label">Address</span><span class="slide-val">' + (j.site_address || j.site_suburb || '\u2014') + '</span></div>';
@@ -1843,8 +2025,31 @@
       body += '<div class="slide-row"><span class="slide-label">Status</span><span class="slide-val">' + statusBadge(j.status) + '</span></div>';
       body += '<div class="slide-row"><span class="slide-label">Quote Value</span><span class="slide-val">' + fmtCurrency(qv) + '</span></div>';
       body += '<div class="slide-row"><span class="slide-label">Created</span><span class="slide-val">' + fmtDaysAgo(j.created_at) + ' ago</span></div>';
+
+      // View Scope link if scope_json exists
+      if (j.scope_json) {
+        var scopeUrl = (j.type || '').toLowerCase().indexOf('fenc') !== -1
+          ? 'https://marninms98-dotcom.github.io/fence-designer/'
+          : 'https://marninms98-dotcom.github.io/patio-tool/';
+        body += '<div style="margin-top:8px"><a href="' + scopeUrl + '" target="_blank" class="btn btn-ghost btn-small" style="display:inline-flex">View Scope</a></div>';
+      }
+
       if (j.notes) {
         body += '<div class="slide-notes">' + escHtml(j.notes) + '</div>';
+      }
+
+      // Activity timeline from job events
+      var events = j.events || j.job_events || [];
+      if (events.length > 0) {
+        body += '<div class="slide-timeline"><h4>Activity Timeline</h4>';
+        var eventIcons = { status_change: '\u21C4', sms_sent: '\uD83D\uDCAC', call_logged: '\uD83D\uDCDE', email_sent: '\u2709', quote_sent: '\uD83D\uDCE4', job_accepted: '\u2705', job_created: '\u2795', note_added: '\uD83D\uDCDD', ghl_updated: '\uD83D\uDD04' };
+        events.slice(0, 15).forEach(function(ev) {
+          var evType = ev.event_type || ev.type || '';
+          var icon = eventIcons[evType] || '\u2022';
+          var text = ev.description || ev.text || evType.replace(/_/g, ' ');
+          body += '<div class="timeline-item"><span class="timeline-icon">' + icon + '</span><span class="timeline-text">' + escHtml(text) + '</span><span class="timeline-time">' + relativeTime(ev.created_at || ev.timestamp) + '</span></div>';
+        });
+        body += '</div>';
       }
 
       // ── Client Messages (Chat) Section ──
@@ -2571,10 +2776,10 @@
     leads.forEach(function(l) {
       var days = daysCount(l.created_at);
       var dCls = daysClass(days);
-      var isHot = hotSuburbs.indexOf(l.suburb) !== -1;
+      var isHot = hotSuburbs.indexOf(l.site_suburb || l.suburb) !== -1;
       var borderColor = (l.status || 'draft') === 'accepted' ? 'var(--sw-green)' : (l.status === 'quoted' ? 'var(--sw-orange)' : (l.status === 'cancelled' ? 'var(--sw-red)' : 'var(--sw-blue)'));
       html += '<div class="lead-card" style="border-left-color:' + borderColor + '" onclick="openSlide(\'' + (l.id || '') + '\')">';
-      html += '<div class="lead-card-top"><div><div class="lead-card-name">' + (l.client_name || '\u2014') + (isHot ? ' <span class="hot-badge">HOT</span>' : '') + '</div><div class="lead-card-suburb">' + (l.suburb || '') + '</div></div>' + statusBadge(l.status) + '</div>';
+      html += '<div class="lead-card-top"><div><div class="lead-card-name">' + (l.client_name || '\u2014') + (isHot ? ' <span class="hot-badge">HOT</span>' : '') + '</div><div class="lead-card-suburb">' + (l.site_suburb || l.suburb || '') + '</div></div>' + statusBadge(l.status) + '</div>';
       html += '<div class="lead-card-row"><span>' + sourceBadge(l.source || l.lead_source) + '</span><span class="action-item-days ' + dCls + '">' + fmtDaysAgo(l.created_at) + '</span></div>';
       html += '<div class="lead-card-row">';
       if (l.phone || l.client_phone) html += '<a class="lead-card-phone" href="tel:' + (l.phone || l.client_phone || '').replace(/\s/g, '') + '">' + (l.phone || l.client_phone) + '</a>';
@@ -2591,12 +2796,12 @@
     leads.forEach(function(l) {
       var days = daysCount(l.created_at);
       var dCls = daysClass(days);
-      var isHot = hotSuburbs.indexOf(l.suburb) !== -1;
+      var isHot = hotSuburbs.indexOf(l.site_suburb || l.suburb) !== -1;
       var phone = l.phone || l.client_phone || '';
       html += '<tr style="cursor:pointer" onclick="openSlide(\'' + (l.id || '') + '\')">';
       html += '<td><strong>' + (l.client_name || '\u2014') + '</strong>' + (isHot ? ' <span class="hot-badge">HOT</span>' : '') + '</td>';
       html += '<td>' + (phone ? '<a href="tel:' + phone.replace(/\s/g, '') + '" style="color:var(--sw-blue);text-decoration:none">' + phone + '</a>' : '\u2014') + '</td>';
-      html += '<td>' + (l.suburb || '\u2014') + '</td>';
+      html += '<td>' + (l.site_suburb || l.suburb || '\u2014') + '</td>';
       html += '<td>' + sourceBadge(l.source || l.lead_source) + (l.utm_campaign ? '<div class="utm-text">' + l.utm_campaign + '</div>' : '') + '</td>';
       html += '<td style="white-space:nowrap">' + (l.created_at ? new Date(l.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : '\u2014') + '</td>';
       html += '<td>' + statusBadge(l.status) + '</td>';
@@ -2644,6 +2849,110 @@
       _leadsPage++;
       loadLeads();
     }
+  };
+
+  // ══════════════════════════════════════════════════
+  // STATUS CHANGE (from slide panel)
+  // ══════════════════════════════════════════════════
+  window.changeJobStatus = function(jobId, newStatus) {
+    if (!jobId || !newStatus) return;
+    var labels = { quoted: 'Quoted', accepted: 'Won', cancelled: 'Lost' };
+    if (!confirm('Change status to ' + (labels[newStatus] || newStatus) + '?')) return;
+
+    fetch(OPS_API + '?action=updateJobStatus', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job_id: jobId, status: newStatus, source: 'sale_dashboard' })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function() {
+      toast('Status updated to ' + (labels[newStatus] || newStatus), 'success');
+      closeSlide();
+      // Reload current view
+      if (_currentView === 'action') loadAction();
+      else if (_currentView === 'pipeline') loadPipeline();
+      else if (_currentView === 'leads') loadLeads();
+      else if (_currentView === 'performance') loadPerformance();
+    }).catch(function(err) {
+      toast('Failed to update status: ' + friendlyError(err), 'error');
+    });
+  };
+
+  // ══════════════════════════════════════════════════
+  // ALERTS TAB
+  // ══════════════════════════════════════════════════
+  window.loadAlerts = function() {
+    var container = document.getElementById('alertsContent');
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading alerts...</div>';
+
+    saleFetch('sales_alerts').then(function(data) {
+      renderAlerts(data);
+    }).catch(function(err) {
+      container.innerHTML = '<div class="error-state"><p>Failed to load alerts</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadAlerts()" style="margin-top:12px">Retry</button></div>';
+    });
+  };
+
+  function renderAlerts(data) {
+    var container = document.getElementById('alertsContent');
+    var alerts = data.alerts || [];
+    var today = new Date().toISOString().slice(0, 10);
+    var dismissKey = 'sw_alerts_dismissed_' + today;
+    var dismissed = [];
+    try { dismissed = JSON.parse(localStorage.getItem(dismissKey) || '[]'); } catch(e) {}
+
+    // Filter out dismissed
+    var visible = alerts.filter(function(a, i) {
+      return dismissed.indexOf(a.type + '_' + i) === -1;
+    });
+
+    if (visible.length === 0) {
+      container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><p>No alerts right now \u2014 looking good!</p></div>';
+      return;
+    }
+
+    var html = '<div class="section-heading">Smart Alerts <span class="badge">' + visible.length + '</span></div>';
+
+    alerts.forEach(function(alert, idx) {
+      if (dismissed.indexOf(alert.type + '_' + idx) !== -1) return;
+      html += '<div class="alert-card ' + (alert.severity || 'info') + '">';
+      html += '<div class="alert-body">';
+      html += '<div class="alert-title">' + escHtml(alert.title || '') + '</div>';
+      html += '<div class="alert-detail">' + escHtml(alert.detail || '') + '</div>';
+      html += '<div class="alert-actions">';
+
+      // Action button based on type
+      var actionText = alert.action_text || 'View';
+      if (alert.type === 'speed_to_lead' || alert.type === 'stale_quote' || alert.type === 'follow_up') {
+        var firstJobId = (alert.job_ids && alert.job_ids[0]) || '';
+        if (firstJobId) {
+          html += '<button class="alert-btn primary" onclick="openSlide(\'' + firstJobId + '\')">' + escHtml(actionText) + '</button>';
+        }
+      } else if (alert.type === 'pipeline_gap') {
+        html += '<button class="alert-btn primary" onclick="showView(\'pipeline\')">' + escHtml(actionText) + '</button>';
+      } else if (alert.type === 'win_rate') {
+        html += '<button class="alert-btn primary" onclick="showView(\'performance\')">' + escHtml(actionText) + '</button>';
+      } else if (alert.type === 'hot_suburb') {
+        html += '<button class="alert-btn primary" onclick="showView(\'leads\')">' + escHtml(actionText) + '</button>';
+      } else {
+        html += '<button class="alert-btn primary" onclick="showView(\'pipeline\')">' + escHtml(actionText) + '</button>';
+      }
+
+      html += '<button class="alert-btn dismiss" onclick="dismissAlert(\'' + alert.type + '_' + idx + '\')">Dismiss</button>';
+      html += '</div></div></div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  window.dismissAlert = function(key) {
+    var today = new Date().toISOString().slice(0, 10);
+    var dismissKey = 'sw_alerts_dismissed_' + today;
+    var dismissed = [];
+    try { dismissed = JSON.parse(localStorage.getItem(dismissKey) || '[]'); } catch(e) {}
+    dismissed.push(key);
+    localStorage.setItem(dismissKey, JSON.stringify(dismissed));
+    loadAlerts();
   };
 
   // ══════════════════════════════════════════════════
