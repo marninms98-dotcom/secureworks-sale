@@ -1666,13 +1666,19 @@
     showView(saved || 'action');
   }
 
+  // Only show actual salespeople in the filter dropdown
+  var SALES_TEAM_IDS = {
+    '5862cf1d-0a3b-4836-8fd1-d69f95aa2f73': 'Nithin',
+    'be6c2188-2b7b-49c7-b6e4-5b0d0deb6415': 'Khairo'
+  };
+
   function loadSalespeople() {
     opsFetch('list_users').then(function(data) {
       var users = data.users || data || [];
-      _salespeople = users;
+      _salespeople = users.filter(function(u) { return SALES_TEAM_IDS[u.id]; });
       var opts = '<option value="">All Salespeople</option>';
-      users.forEach(function(u) {
-        opts += '<option value="' + u.id + '">' + (u.name || u.email) + '</option>';
+      _salespeople.forEach(function(u) {
+        opts += '<option value="' + u.id + '">' + (SALES_TEAM_IDS[u.id] || u.name || u.email) + '</option>';
       });
       document.querySelectorAll('.admin-filter select').forEach(function(sel) {
         sel.innerHTML = opts;
