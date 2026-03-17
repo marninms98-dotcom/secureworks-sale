@@ -1576,14 +1576,19 @@
     var container = document.getElementById('todayContent');
     container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading your dashboard...</div>';
 
-    Promise.all([
-      saleFetch('sale_today_stats'),
-      saleFetch('sale_actions'),
-      saleFetch('sale_activity_feed', { limit: 10 })
-    ]).then(function(results) {
-      var stats = results[0] || {};
-      var actions = results[1] || {};
-      var feed = results[2] || {};
+    saleFetch('sales_summary').then(function(data) {
+      // Map sales_summary response to expected shapes
+      var stats = {
+        quotes_sent: (data.quotes_this_week || {}).count || 0,
+        quotes_value: (data.quotes_this_week || {}).value || 0,
+        jobs_booked: (data.booked_this_week || {}).count || 0,
+        booked_value: (data.booked_this_week || {}).value || 0,
+        my_leads: (data.my_leads || {}).count || 0,
+        oldest_lead_date: null, // not returned directly
+        close_rate: data.close_rate_month || 0
+      };
+      var actions = data.actions || {};
+      var feed = { events: data.recent_activity || [] };
       renderToday(stats, actions, feed);
     }).catch(function(err) {
       container.innerHTML = '<div class="error-state"><p>Failed to load dashboard</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadToday()" style="margin-top:12px">Retry</button></div>';
@@ -1681,7 +1686,7 @@
     var container = document.getElementById('pipelineContent');
     container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading pipeline...</div>';
 
-    saleFetch('sale_pipeline').then(function(data) {
+    saleFetch('sales_pipeline').then(function(data) {
       renderPipeline(data);
     }).catch(function(err) {
       container.innerHTML = '<div class="error-state"><p>Failed to load pipeline</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadPipeline()" style="margin-top:12px">Retry</button></div>';
@@ -2254,26 +2259,54 @@
     var container = document.getElementById('performanceContent');
     container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading stats...</div>';
 
-    var params = { period: _performancePeriod };
+    // Convert period to from/to dates for the API
+    var params = {};
+    var now = new Date();
     if (_performancePeriod === 'custom' && _customFrom && _customTo) {
       params.from = _customFrom;
       params.to = _customTo;
+    } else if (_performancePeriod === 'this_week') {
+      var dow = now.getDay() || 7;
+      var mon = new Date(now.getTime() - (dow - 1) * 86400000);
+      params.from = mon.toISOString().slice(0, 10);
+      params.to = now.toISOString().slice(0, 10);
+    } else if (_performancePeriod === 'last_month') {
+      var lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      var lmEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+      params.from = lm.toISOString().slice(0, 10);
+      params.to = lmEnd.toISOString().slice(0, 10);
+    } else {
+      // this_month (default)
+      params.from = now.toISOString().slice(0, 7) + '-01';
+      params.to = now.toISOString().slice(0, 10);
     }
 
-    Promise.all([
-      saleFetch('sale_performance', params),
-      saleFetch('sale_weekly_trend'),
-      saleFetch('sale_by_type', params),
-      saleFetch('sale_funnel', params),
-      saleFetch('sale_top_suburbs', params),
-      _isAdmin ? saleFetch('sale_leaderboard', params) : Promise.resolve(null)
-    ]).then(function(results) {
-      var kpis = results[0] || {};
-      var weekly = results[1] || {};
-      var byType = results[2] || {};
-      var funnel = results[3] || {};
-      var suburbs = results[4] || {};
-      var leaderboard = results[5];
+    saleFetch('sales_performance', params).then(function(data) {
+      // sales_performance returns everything in one response
+      var kpisRaw = data.kpis || {};
+      var kpis = {
+        total_quoted_count: (kpisRaw.total_quoted || {}).count || 0,
+        total_quoted_value: (kpisRaw.total_quoted || {}).value || 0,
+        total_booked_count: (kpisRaw.total_booked || {}).count || 0,
+        total_booked_value: (kpisRaw.total_booked || {}).value || 0,
+        close_rate: kpisRaw.close_rate || 0,
+        avg_job_value: kpisRaw.avg_job_value || 0,
+        avg_lead_to_quote_days: kpisRaw.avg_days_lead_to_quote || 0,
+        avg_quote_to_accepted_days: kpisRaw.avg_days_quote_to_accepted || 0,
+        revenue: 0
+      };
+      var weekly = data.weekly_trend || [];
+      var byType = data.by_type || {};
+      // Convert funnel object { leads, scoped, quoted, accepted } to array format
+      var funnelRaw = data.funnel || {};
+      var funnel = [
+        { label: 'Leads', count: funnelRaw.leads || 0 },
+        { label: 'Scoped', count: funnelRaw.scoped || 0 },
+        { label: 'Quoted', count: funnelRaw.quoted || 0 },
+        { label: 'Accepted', count: funnelRaw.accepted || 0 }
+      ];
+      var suburbs = data.by_suburb || [];
+      var leaderboard = _isAdmin ? (data.leaderboard || []) : null;
       renderPerformance(kpis, weekly, byType, funnel, suburbs, leaderboard);
     }).catch(function(err) {
       container.innerHTML = '<div class="error-state"><p>Failed to load stats</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadPerformance()" style="margin-top:12px">Retry</button></div>';
@@ -2404,9 +2437,12 @@
       var bookedData = [];
       if (Array.isArray(weeks)) {
         weeks.slice(-8).forEach(function(w) {
-          labels.push(w.label || w.week || '');
-          quotedData.push(w.quoted || w.quoted_count || 0);
-          bookedData.push(w.booked || w.booked_count || 0);
+          // Format week label from date string
+          var wDate = w.week ? new Date(w.week + 'T00:00:00') : null;
+          var wLabel = wDate ? (wDate.getDate() + '/' + (wDate.getMonth() + 1)) : (w.label || w.week || '');
+          labels.push(wLabel);
+          quotedData.push(Math.round((w.quoted_value || w.quoted || 0) / 1000));
+          bookedData.push(Math.round((w.booked_value || w.booked || 0) / 1000));
         });
       }
       _chartWeekly = new Chart(weeklyCanvas, {
@@ -2414,8 +2450,8 @@
         data: {
           labels: labels,
           datasets: [
-            { label: 'Quoted', data: quotedData, backgroundColor: 'rgba(241,90,41,0.7)', borderRadius: 4 },
-            { label: 'Booked', data: bookedData, backgroundColor: 'rgba(39,174,96,0.7)', borderRadius: 4 }
+            { label: 'Quoted ($K)', data: quotedData, backgroundColor: 'rgba(241,90,41,0.7)', borderRadius: 4 },
+            { label: 'Booked ($K)', data: bookedData, backgroundColor: 'rgba(39,174,96,0.7)', borderRadius: 4 }
           ]
         },
         options: {
@@ -2434,7 +2470,8 @@
     var typeCanvas = document.getElementById('chartType');
     if (typeCanvas) {
       if (_chartType) { _chartType.destroy(); _chartType = null; }
-      var types = byType.types || byType || [];
+      // byType may be { patio: 45000, fencing: 12000 } or array — normalise
+      var types = byType.types || byType || {};
       var typeLabels = [];
       var typeValues = [];
       var typeColors = [];
@@ -2445,6 +2482,14 @@
           typeLabels.push(t.type || t.label || 'Other');
           typeValues.push(t.count || t.value || 0);
           typeColors.push(colorMap[key] || 'rgba(124,136,152,0.5)');
+        });
+      } else if (typeof types === 'object') {
+        Object.keys(types).forEach(function(key) {
+          if (types[key] > 0) {
+            typeLabels.push(key.charAt(0).toUpperCase() + key.slice(1));
+            typeValues.push(types[key]);
+            typeColors.push(colorMap[key.toLowerCase()] || 'rgba(124,136,152,0.5)');
+          }
         });
       }
       if (typeLabels.length === 0) {
@@ -2486,11 +2531,11 @@
     var sourceEl = document.getElementById('leadSource');
     var sortEl = document.getElementById('leadSort');
     if (searchEl && searchEl.value) params.search = searchEl.value;
-    if (statusEl && statusEl.value) params.status = statusEl.value;
-    if (sourceEl && sourceEl.value) params.source = sourceEl.value;
-    if (sortEl && sortEl.value) params.sort = sortEl.value;
+    if (statusEl && statusEl.value) params.status_filter = statusEl.value;
+    if (sourceEl && sourceEl.value) params.source_filter = sourceEl.value;
+    if (sortEl && sortEl.value) params.sort_by = sortEl.value;
 
-    saleFetch('sale_leads', params).then(function(data) {
+    saleFetch('sales_leads', params).then(function(data) {
       renderLeads(data, params);
     }).catch(function(err) {
       container.innerHTML = '<div class="error-state"><p>Failed to load leads</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadLeads()" style="margin-top:12px">Retry</button></div>';
@@ -2510,7 +2555,7 @@
     // Filter bar
     html += '<div class="filter-bar">';
     html += '<input type="text" id="leadSearch" placeholder="Search name or suburb..." value="' + (params.search || '') + '" oninput="debounceLeadSearch()">';
-    html += '<select id="leadStatus" onchange="resetLeadsPage(); loadLeads()"><option value="">All Status</option><option value="draft"' + (params.status === 'draft' ? ' selected' : '') + '>Draft</option><option value="quoted"' + (params.status === 'quoted' ? ' selected' : '') + '>Quoted</option><option value="accepted"' + (params.status === 'accepted' ? ' selected' : '') + '>Accepted</option><option value="cancelled"' + (params.status === 'cancelled' ? ' selected' : '') + '>Lost</option></select>';
+    html += '<select id="leadStatus" onchange="resetLeadsPage(); loadLeads()"><option value="">All Status</option><option value="draft"' + (params.status_filter === 'draft' ? ' selected' : '') + '>Draft</option><option value="quoted"' + (params.status_filter === 'quoted' ? ' selected' : '') + '>Quoted</option><option value="accepted"' + (params.status_filter === 'accepted' ? ' selected' : '') + '>Accepted</option><option value="cancelled"' + (params.status_filter === 'cancelled' ? ' selected' : '') + '>Lost</option></select>';
     html += '<select id="leadSource" onchange="resetLeadsPage(); loadLeads()"><option value="">All Sources</option><option value="google_ads"' + (params.source === 'google_ads' ? ' selected' : '') + '>Google Ads</option><option value="organic"' + (params.source === 'organic' ? ' selected' : '') + '>Organic</option><option value="referral"' + (params.source === 'referral' ? ' selected' : '') + '>Referral</option><option value="direct"' + (params.source === 'direct' ? ' selected' : '') + '>Direct</option><option value="unknown"' + (params.source === 'unknown' ? ' selected' : '') + '>Unknown</option></select>';
     html += '<select id="leadSort" onchange="resetLeadsPage(); loadLeads()"><option value="newest"' + (params.sort === 'newest' ? ' selected' : '') + '>Newest</option><option value="oldest"' + (params.sort === 'oldest' ? ' selected' : '') + '>Oldest</option><option value="value_high"' + (params.sort === 'value_high' ? ' selected' : '') + '>Value (high)</option><option value="value_low"' + (params.sort === 'value_low' ? ' selected' : '') + '>Value (low)</option></select>';
     html += '</div>';
