@@ -1610,7 +1610,7 @@
     btn.textContent = 'Logging in...';
     hideLoginError();
 
-    cloud.auth.signInWithPassword(email, password).then(function() {
+    cloud.auth.signIn(email, password).then(function() {
       // onLogin fires via auth:login event
     }).catch(function(err) {
       var msg = (err && err.message) || String(err);
@@ -2017,8 +2017,10 @@
       } else if (st === 'quoted') {
         body += '<button class="btn-won" onclick="changeJobStatus(\'' + jobId + '\',\'accepted\')">Mark Won</button>';
         body += '<button class="btn-lost" onclick="changeJobStatus(\'' + jobId + '\',\'cancelled\')">Mark Lost</button>';
+        body += '<button class="btn-invoice" onclick="sendDepositInvoice(\'' + jobId + '\')" style="background:#F15A29;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;margin-top:4px">Send Deposit Invoice</button>';
       } else if (st === 'accepted') {
         body += '<button class="btn-quoted" onclick="changeJobStatus(\'' + jobId + '\',\'quoted\')">Revert to Quoted</button>';
+        body += '<button class="btn-invoice" onclick="sendDepositInvoice(\'' + jobId + '\')" style="background:#F15A29;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;margin-top:4px">Send Deposit Invoice</button>';
       } else if (st === 'cancelled') {
         body += '<button class="btn-quoted" onclick="changeJobStatus(\'' + jobId + '\',\'quoted\')">Reopen as Quoted</button>';
       }
@@ -2882,6 +2884,36 @@
       else if (_currentView === 'performance') loadPerformance();
     }).catch(function(err) {
       toast('Failed to update status: ' + friendlyError(err), 'error');
+    });
+  };
+
+  // ══════════════════════════════════════════════════
+  // SEND DEPOSIT INVOICE
+  // ══════════════════════════════════════════════════
+  window.sendDepositInvoice = function(jobId) {
+    if (!jobId) return;
+    if (!confirm('Send deposit invoice to the client? This will create the invoice in Xero and SMS the payment link.')) return;
+
+    toast('Creating deposit invoice...', 'info');
+
+    fetch(OPS_API + '?action=send_acceptance_invoice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job_id: jobId, notify_client: true })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
+      if (data.success) {
+        var msg = 'Deposit invoice ' + (data.invoice_number || '') + ' sent!';
+        if (data.deposit_amount) msg += ' ($' + Number(data.deposit_amount).toLocaleString() + ')';
+        if (data.sms_sent) msg += ' SMS sent.';
+        toast(msg, 'success');
+      } else {
+        toast('Invoice failed: ' + (data.error || 'Unknown error'), 'error');
+      }
+    }).catch(function(err) {
+      toast('Failed to send deposit invoice: ' + friendlyError(err), 'error');
     });
   };
 
