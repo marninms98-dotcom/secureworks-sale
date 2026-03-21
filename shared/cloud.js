@@ -24,6 +24,14 @@
   var metaKey = document.querySelector('meta[name="supabase-anon-key"]');
   var SUPABASE_URL = window.SUPABASE_URL || (metaUrl && metaUrl.content) || '';
   var SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || (metaKey && metaKey.content) || '';
+  var SW_API_KEY = window.SW_API_KEY || '097a1160f9a8b2f517f4770ebbe88dca105a36f816ef728cc8724da25b2667dc';
+
+  // Helper: standard headers for edge function calls
+  function _swHeaders(extra) {
+    var h = { 'Content-Type': 'application/json', 'x-api-key': SW_API_KEY };
+    if (extra) { for (var k in extra) h[k] = extra[k]; }
+    return h;
+  }
 
   console.log('[SecureWorks Cloud] URL:', SUPABASE_URL ? 'found' : 'MISSING');
   console.log('[SecureWorks Cloud] Key:', SUPABASE_ANON_KEY ? 'found' : 'MISSING');
@@ -176,7 +184,7 @@
     try {
       var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=get_profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _swHeaders(),
         body: JSON.stringify({ userId: _user.id, email: _user.email || '' })
       });
       var data = await res.json();
@@ -362,7 +370,7 @@
   var ghl = {
     // Get opportunities from a pipeline
     async getOpportunities(pipeline) {
-      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=opportunities&pipeline=' + encodeURIComponent(pipeline));
+      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=opportunities&pipeline=' + encodeURIComponent(pipeline), { headers: { 'x-api-key': SW_API_KEY } });
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load opportunities');
       return data.opportunities || [];
@@ -370,7 +378,7 @@
 
     // Search opportunities by contact name
     async search(query) {
-      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=search&q=' + encodeURIComponent(query));
+      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=search&q=' + encodeURIComponent(query), { headers: { 'x-api-key': SW_API_KEY } });
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Search failed');
       return data.opportunities || [];
@@ -378,7 +386,7 @@
 
     // Get full contact details from GHL
     async getContact(contactId) {
-      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=contact&contactId=' + encodeURIComponent(contactId));
+      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=contact&contactId=' + encodeURIComponent(contactId), { headers: { 'x-api-key': SW_API_KEY } });
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to get contact');
       return data.contact;
@@ -388,7 +396,7 @@
     async updateContact(contactId, details) {
       var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=update_contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _swHeaders(),
         body: JSON.stringify(Object.assign({ contactId: contactId }, details))
       });
       var data = await res.json();
@@ -400,7 +408,7 @@
     async linkScope(opportunityId, jobId, toolType, contactId) {
       var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _swHeaders(),
         body: JSON.stringify({ opportunityId: opportunityId, jobId: jobId, toolType: toolType, contactId: contactId || '' })
       });
       var data = await res.json();
@@ -423,7 +431,7 @@
     // Load a job by ID (via edge function, bypasses RLS)
     async loadJob(jobId) {
       console.log('[Cloud] loadJob:', jobId);
-      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=load_job&jobId=' + encodeURIComponent(jobId));
+      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=load_job&jobId=' + encodeURIComponent(jobId), { headers: { 'x-api-key': SW_API_KEY } });
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load job');
       return data.job;
@@ -432,7 +440,7 @@
     // List photos/videos for a job (via edge function)
     async listMedia(jobId) {
       console.log('[Cloud] listMedia:', jobId);
-      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=list_media&jobId=' + encodeURIComponent(jobId));
+      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=list_media&jobId=' + encodeURIComponent(jobId), { headers: { 'x-api-key': SW_API_KEY } });
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to list media');
       return data.media || [];
@@ -443,7 +451,7 @@
       console.log('[Cloud] uploadPhoto:', jobId, label);
       var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=upload_photo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _swHeaders(),
         body: JSON.stringify({ jobId: jobId, dataUrl: dataUrl, label: label || '', caption: caption || '' })
       });
       var data = await res.json();
@@ -456,7 +464,7 @@
       console.log('[Cloud] saveScope:', jobId);
       var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=save_scope', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _swHeaders(),
         body: JSON.stringify({ jobId: jobId, scopeJson: scopeJson, meta: meta })
       });
       var data = await res.json();
@@ -465,21 +473,52 @@
       return data.job;
     },
 
+    // Auto-create GHL contact + opportunity for walk-up clients (dedup by email/phone)
+    async createContactAndOpportunity(contact, toolType) {
+      console.log('[Cloud] createContactAndOpportunity:', toolType);
+      var firstName = contact.firstName || '';
+      var lastName = contact.lastName || '';
+      if (!firstName && contact.name) {
+        var parts = contact.name.trim().split(/\s+/);
+        firstName = parts[0] || '';
+        lastName = parts.slice(1).join(' ') || '';
+      }
+      var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=create_contact_and_opportunity', {
+        method: 'POST',
+        headers: _swHeaders(),
+        body: JSON.stringify({
+          firstName: firstName,
+          lastName: lastName,
+          email: contact.email || '',
+          phone: contact.phone || '',
+          address: contact.address || '',
+          suburb: contact.suburb || '',
+          toolType: toolType
+        })
+      });
+      var data = await res.json();
+      console.log('[Cloud] createContactAndOpportunity result:', data);
+      if (!res.ok) throw new Error(data.error || 'Failed to create contact/opportunity');
+      return data;
+    },
+
     // Create a Supabase job linked to a GHL opportunity (via edge function to bypass RLS)
     async createJobForOpportunity(opportunityId, toolType, contact) {
       console.log('[Cloud] createJobForOpportunity:', opportunityId, toolType);
+      var payload = {
+        toolType: toolType,
+        clientName: contact.name || '',
+        clientPhone: contact.phone || '',
+        clientEmail: contact.email || '',
+        siteAddress: contact.address || '',
+        siteSuburb: contact.suburb || ''
+      };
+      if (opportunityId) payload.opportunityId = opportunityId;
+      if (contact.contactId) payload.contactId = contact.contactId;
       var res = await fetch(SUPABASE_URL + '/functions/v1/ghl-proxy?action=create_job', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          opportunityId: opportunityId,
-          toolType: toolType,
-          clientName: contact.name || '',
-          clientPhone: contact.phone || '',
-          clientEmail: contact.email || '',
-          siteAddress: contact.address || '',
-          siteSuburb: contact.suburb || ''
-        })
+        headers: _swHeaders(),
+        body: JSON.stringify(payload)
       });
       var data = await res.json();
       console.log('[Cloud] createJobForOpportunity result:', data);
@@ -838,11 +877,12 @@
       overlay.id = 'sw-login-overlay';
       overlay.innerHTML =
         '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;">' +
-          '<div style="background:#fff;border-radius:12px;padding:32px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+          '<div style="background:#fff;border-radius:12px;padding:32px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">' +
             '<h2 style="margin:0 0 8px;color:' + hex.dark + ';font-size:18px;">Sign In</h2>' +
-            '<p style="margin:0 0 20px;color:' + hex.mid + ';font-size:13px;">Enter your email to receive a magic link</p>' +
-            '<input type="email" id="sw-login-email" placeholder="your@email.com" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:12px;">' +
-            '<button id="sw-login-btn" style="width:100%;padding:10px;background:' + hex.orange + ';color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">Send Magic Link</button>' +
+            '<p style="margin:0 0 20px;color:' + hex.mid + ';font-size:13px;">Enter your email and password</p>' +
+            '<input type="email" id="sw-login-email" placeholder="your@email.com" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:10px;">' +
+            '<input type="password" id="sw-login-password" placeholder="Password" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:12px;">' +
+            '<button id="sw-login-btn" style="width:100%;padding:10px;background:' + hex.orange + ';color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">Log In</button>' +
             '<p id="sw-login-status" style="margin:12px 0 0;font-size:12px;color:' + hex.mid + ';text-align:center;"></p>' +
             '<button id="sw-login-close" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">&times;</button>' +
           '</div>' +
@@ -854,22 +894,28 @@
         overlay.remove();
       };
 
+      // Enter key on password field
+      document.getElementById('sw-login-password').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('sw-login-btn').click();
+      });
+
       document.getElementById('sw-login-btn').onclick = async function() {
         var email = document.getElementById('sw-login-email').value.trim();
+        var password = document.getElementById('sw-login-password').value;
         var status = document.getElementById('sw-login-status');
-        if (!email) { status.textContent = 'Please enter your email'; return; }
+        if (!email || !password) { status.textContent = 'Please enter email and password'; return; }
 
         try {
           document.getElementById('sw-login-btn').disabled = true;
-          document.getElementById('sw-login-btn').textContent = 'Sending...';
-          await auth.sendMagicLink(email);
-          status.style.color = '#34C759';
-          status.textContent = 'Check your email for the login link!';
+          document.getElementById('sw-login-btn').textContent = 'Logging in...';
+          await auth.signIn(email, password);
+          overlay.remove();
+          if (onSuccess) onSuccess(_userProfile);
         } catch(e) {
           status.style.color = '#FF3B30';
-          status.textContent = e.message || 'Failed to send link';
+          status.textContent = e.message || 'Wrong email or password';
           document.getElementById('sw-login-btn').disabled = false;
-          document.getElementById('sw-login-btn').textContent = 'Send Magic Link';
+          document.getElementById('sw-login-btn').textContent = 'Log In';
         }
       };
 
@@ -958,15 +1004,11 @@
         _searchTimer = setTimeout(function() { _loadList(val); }, 300);
       };
 
-      // New job button
-      document.getElementById('sw-job-new').onclick = async function() {
-        try {
-          var job = await cloud.createJob(toolType, {});
-          overlay.remove();
-          if (onSelect) onSelect(job.id);
-        } catch(e) {
-          alert('Failed to create job: ' + e.message);
-        }
+      // New job button — local-only until explicit cloud save
+      document.getElementById('sw-job-new').onclick = function() {
+        var localId = 'local-' + Date.now();
+        overlay.remove();
+        if (onSelect) onSelect(localId);
       };
     },
 
@@ -1188,6 +1230,27 @@
   })();
 
   // ════════════════════════════════════════════════════════════
+  // PRICING — fetch scope_tool_defaults from DB
+  // ════════════════════════════════════════════════════════════
+
+  var pricing = {
+    async getDefaults(scopeTool) {
+      try {
+        var { data, error } = await sb.from('scope_tool_defaults')
+          .select('category, item_key, item_description, unit, default_price, default_cost_rate, default_sqm_rate, last_updated_at')
+          .eq('scope_tool', scopeTool);
+        if (error || !data) return null;
+        var map = {};
+        data.forEach(function(row) { map[row.item_key] = row; });
+        return { defaults: map, fetched_at: new Date().toISOString() };
+      } catch(e) {
+        console.warn('[Cloud] pricing.getDefaults failed:', e);
+        return null;
+      }
+    }
+  };
+
+  // ════════════════════════════════════════════════════════════
   // EXPORT
   // ════════════════════════════════════════════════════════════
 
@@ -1198,6 +1261,7 @@
     media: media,
     ghl: ghl,
     ui: ui,
+    pricing: pricing,
 
     // Auto-save helpers
     startAutoSave: startAutoSave,

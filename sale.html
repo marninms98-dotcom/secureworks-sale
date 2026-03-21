@@ -1475,6 +1475,7 @@
   var _customTo = '';
   var _lostExpanded = false;
 
+  var _swApiKey = '097a1160f9a8b2f517f4770ebbe88dca105a36f816ef728cc8724da25b2667dc';
   var REPORT_API = window.SUPABASE_URL + '/functions/v1/reporting-api';
   var OPS_API = window.SUPABASE_URL + '/functions/v1/ops-api';
 
@@ -1577,7 +1578,7 @@
     if (!_isAdmin && _user) qs.set('salesperson_id', _user.id);
     var sp = getSpFilter();
     if (_isAdmin && sp) qs.set('salesperson_id', sp);
-    return fetch(REPORT_API + '?' + qs.toString()).then(function(res) {
+    return fetch(REPORT_API + '?' + qs.toString(), { headers: { 'x-api-key': _swApiKey } }).then(function(res) {
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
     });
@@ -1591,7 +1592,7 @@
         qs.set(k, params[k]);
       }
     });
-    return fetch(OPS_API + '?' + qs.toString()).then(function(res) {
+    return fetch(OPS_API + '?' + qs.toString(), { headers: { 'x-api-key': _swApiKey } }).then(function(res) {
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
     });
@@ -1989,7 +1990,7 @@
     document.getElementById('slidePanel').classList.add('show');
 
     // Use ops-api job_detail for full job data including ghl_contact_id
-    fetch(OPS_API + '?action=job_detail&job_id=' + encodeURIComponent(jobId)).then(function(res) {
+    fetch(OPS_API + '?action=job_detail&job_id=' + encodeURIComponent(jobId), { headers: { 'x-api-key': _swApiKey } }).then(function(res) {
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
     }).then(function(data) {
@@ -2137,7 +2138,7 @@
     var thread = document.getElementById('chatThread');
     if (thread) thread.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading messages...</div>';
 
-    fetch(GHL_PROXY + '?action=get_conversation&contactId=' + encodeURIComponent(contactId)).then(function(res) {
+    fetch(GHL_PROXY + '?action=get_conversation&contactId=' + encodeURIComponent(contactId), { headers: { 'x-api-key': _swApiKey } }).then(function(res) {
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
     }).then(function(data) {
@@ -2286,7 +2287,7 @@
 
     fetch(GHL_PROXY + '?action=send_sms', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _swApiKey },
       body: JSON.stringify({
         contactId: _slideContactId,
         message: message,
@@ -2353,7 +2354,7 @@
       text: 'Phone call: ' + text,
       user_id: _user ? _user.id : ''
     });
-    fetch(OPS_API + '?' + qs.toString(), { method: 'POST' }).then(function() {
+    fetch(OPS_API + '?' + qs.toString(), { method: 'POST', headers: { 'x-api-key': _swApiKey } }).then(function() {
       toast('Call notes saved', 'success');
     }).catch(function() {
       toast('Failed to save call notes', 'error');
@@ -2398,7 +2399,7 @@
 
     fetch(GHL_PROXY + '?action=send_email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _swApiKey },
       body: JSON.stringify({
         contactId: _slideContactId,
         subject: subject,
@@ -2432,7 +2433,7 @@
         text: 'Email sent: ' + subject,
         user_id: _user ? _user.id : ''
       });
-      fetch(OPS_API + '?' + qs.toString(), { method: 'POST' }).catch(function() {});
+      fetch(OPS_API + '?' + qs.toString(), { method: 'POST', headers: { 'x-api-key': _swApiKey } }).catch(function() {});
     }
   };
 
@@ -2456,7 +2457,7 @@
       user_id: _user ? _user.id : ''
     });
 
-    fetch(OPS_API + '?' + qs.toString(), { method: 'POST' }).then(function(res) {
+    fetch(OPS_API + '?' + qs.toString(), { method: 'POST', headers: { 'x-api-key': _swApiKey } }).then(function(res) {
       if (!res.ok) throw new Error('API error');
       document.getElementById('slideNote').value = '';
       toast('Activity logged', 'success');
@@ -2869,7 +2870,7 @@
 
     fetch(OPS_API + '?action=update_job_status', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _swApiKey },
       body: JSON.stringify({ job_id: jobId, status: newStatus, source: 'sale_dashboard' })
     }).then(function(res) {
       if (!res.ok) throw new Error('API error: ' + res.status);
@@ -2898,7 +2899,7 @@
 
     fetch(OPS_API + '?action=send_acceptance_invoice', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _swApiKey },
       body: JSON.stringify({ job_id: jobId, notify_client: true })
     }).then(function(res) {
       if (!res.ok) throw new Error('API error: ' + res.status);
