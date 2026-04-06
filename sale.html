@@ -1233,6 +1233,193 @@
     /* Last contact sub-line */
     .last-contact { font-size: 11px; color: var(--sw-text-sec); opacity: 0.7; }
 
+    /* Kanban quick-status dropdown */
+    .kanban-quick-status {
+      margin-left: auto;
+      padding: 2px 6px;
+      font-size: 11px;
+      border: 1px solid var(--sw-border);
+      border-radius: 4px;
+      background: var(--sw-card);
+      color: var(--sw-text-sec);
+      cursor: pointer;
+      float: right;
+    }
+    .kanban-quick-status:hover { border-color: var(--sw-mid); color: var(--sw-text); }
+
+    /* ══════════════════════════════════════════════════
+       SCOPES CALENDAR
+       ══════════════════════════════════════════════════ */
+    .scopes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .scopes-header h3 { font-size: 16px; font-weight: 700; color: var(--sw-dark); }
+    .scope-week-nav { display: flex; align-items: center; gap: 8px; }
+    .scope-week-nav button {
+      padding: 6px 12px;
+      border: 1px solid var(--sw-border);
+      border-radius: 6px;
+      background: var(--sw-card);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--sw-text);
+    }
+    .scope-week-nav button:hover { background: var(--sw-light); }
+    .scope-week-label { font-size: 14px; font-weight: 600; min-width: 160px; text-align: center; }
+    .btn-book-scope {
+      padding: 8px 16px;
+      background: var(--sw-orange);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-book-scope:hover { background: #C4481F; }
+
+    .scope-grid {
+      display: grid;
+      grid-template-columns: 100px repeat(5, 1fr);
+      border: 1px solid var(--sw-border);
+      border-radius: var(--sw-radius);
+      background: var(--sw-card);
+      overflow: hidden;
+    }
+    .scope-grid-header {
+      background: var(--sw-dark);
+      color: #fff;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .scope-grid-header:last-child { border-right: none; }
+    .scope-grid-header.today { background: var(--sw-orange); }
+    .scope-row-label {
+      padding: 12px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sw-dark);
+      border-bottom: 1px solid var(--sw-border);
+      border-right: 1px solid var(--sw-border);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .scope-row-label small { font-weight: 400; color: var(--sw-text-sec); font-size: 11px; }
+    .scope-cell {
+      min-height: 80px;
+      padding: 4px;
+      border-bottom: 1px solid var(--sw-border);
+      border-right: 1px solid var(--sw-border);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .scope-cell:hover { background: var(--sw-light); }
+    .scope-cell.unavailable {
+      background: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.03) 5px, rgba(0,0,0,0.03) 10px);
+      cursor: default;
+    }
+    .scope-card {
+      background: var(--sw-light);
+      border-left: 3px solid var(--sw-blue);
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .scope-card:hover { background: var(--sw-border); }
+    .scope-card .scope-time { font-weight: 700; color: var(--sw-dark); }
+    .scope-card .scope-client { color: var(--sw-text); margin-top: 1px; }
+    .scope-card .scope-suburb { color: var(--sw-text-sec); font-size: 11px; }
+    .scope-card.confirmed { border-left-color: var(--sw-green); }
+    .scope-card.tentative { border-left-color: var(--sw-yellow); }
+
+    /* Book Scope Panel */
+    .book-scope-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 200;
+    }
+    .book-scope-overlay.show { display: block; }
+    .book-scope-panel {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 400px;
+      height: 100vh;
+      background: var(--sw-card);
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      z-index: 201;
+      transition: right 0.2s;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .book-scope-panel.show { right: 0; }
+    .book-scope-body { padding: 16px; }
+    .book-scope-body label { display: block; font-size: 12px; font-weight: 600; color: var(--sw-text-sec); margin: 12px 0 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .book-scope-body select, .book-scope-body input[type="date"], .book-scope-body input[type="text"] {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--sw-border);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .time-slot-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .time-slot-btn {
+      padding: 8px 14px;
+      border: 1px solid var(--sw-border);
+      border-radius: 6px;
+      background: var(--sw-card);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .time-slot-btn:hover { background: var(--sw-light); border-color: var(--sw-mid); }
+    .time-slot-btn.active { background: var(--sw-orange); color: #fff; border-color: var(--sw-orange); }
+    .time-slot-btn.booked { opacity: 0.3; pointer-events: none; text-decoration: line-through; }
+    .suburb-hint {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .suburb-hint.good { background: #E8F5E9; color: #2E7D32; }
+    .suburb-hint.neutral { background: #FFF3E0; color: #E65100; }
+    .suburb-hint.bad { background: #FFEBEE; color: #C62828; }
+    .book-job-results {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--sw-border);
+      border-radius: 6px;
+      display: none;
+    }
+    .book-job-results.show { display: block; }
+    .book-job-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      border-bottom: 1px solid var(--sw-border);
+    }
+    .book-job-item:hover { background: var(--sw-light); }
+    .book-job-item:last-child { border-bottom: none; }
+    .book-job-item .bji-name { font-weight: 600; }
+    .book-job-item .bji-meta { font-size: 11px; color: var(--sw-text-sec); }
+
     /* ══════════════════════════════════════════════════
        ALERT CARDS (Alerts tab)
        ══════════════════════════════════════════════════ */
@@ -1327,6 +1514,7 @@
       <button data-view="performance" onclick="showView('performance')">Stats</button>
       <button data-view="leads" onclick="showView('leads')">Leads</button>
       <button data-view="alerts" onclick="showView('alerts')">Alerts</button>
+      <button data-view="scopes" onclick="showView('scopes')">Scopes</button>
     </div>
   </div>
   <div class="header-right">
@@ -1358,6 +1546,10 @@
   <button data-view="alerts" onclick="showView('alerts')">
     <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>
     Alerts
+  </button>
+  <button data-view="scopes" onclick="showView('scopes')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg>
+    Scopes
   </button>
 </div>
 
@@ -1456,6 +1648,42 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════
+     SCOPES VIEW
+     ══════════════════════════════════════════════════ -->
+<div id="viewScopes" class="view">
+  <div class="container-wide">
+    <div id="scopesContent">
+      <div class="loading-state"><div class="spinner"></div>Loading scopes...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     BOOK SCOPE PANEL (right side)
+     ══════════════════════════════════════════════════ -->
+<div class="book-scope-overlay" id="bookScopeOverlay" onclick="closeBookScope()"></div>
+<div class="book-scope-panel" id="bookScopePanel">
+  <div class="slide-header">
+    <h3>Book Scope Visit</h3>
+    <button class="slide-close" onclick="closeBookScope()">&times;</button>
+  </div>
+  <div class="book-scope-body" id="bookScopeBody">
+    <label>Scoper</label>
+    <select id="bookScoper"><option value="">Select scoper...</option></select>
+    <label>Date</label>
+    <input type="date" id="bookDate">
+    <label>Time Slot</label>
+    <div class="time-slot-grid" id="bookTimeSlots"></div>
+    <div id="bookSuburbHint" class="suburb-hint" style="display:none"></div>
+    <label>Job</label>
+    <input type="text" id="bookJobSearch" placeholder="Search client name..." oninput="searchBookableJobs()">
+    <div id="bookJobResults" class="book-job-results"></div>
+    <div id="bookSelectedJob" style="display:none"></div>
+    <button class="btn btn-primary" id="btnBookScope" onclick="submitBookScope()" style="width:100%;margin-top:16px" disabled>Book Scope</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
      SLIDE PANEL (Job detail)
      ══════════════════════════════════════════════════ -->
 <div class="slide-overlay" id="slideOverlay" onclick="closeSlide()"></div>
@@ -1529,6 +1757,14 @@
   var _customFrom = '';
   var _customTo = '';
   var _lostExpanded = false;
+  var _recentSms = {}; // contactId → timestamp, prevents double-click
+  var _scopeWeekOffset = 0; // 0 = this week, -1 = last week, etc.
+  var _scopeData = null;
+  var _scoperList = []; // [{ id, name }]
+  var _bookSelectedTime = null;
+  var _bookSelectedJobId = null;
+  var _bookSelectedJobSuburb = null;
+  var _bookSearchDebounce = null;
 
   var _swApiKey = '097a1160f9a8b2f517f4770ebbe88dca105a36f816ef728cc8724da25b2667dc';
   var REPORT_API = window.SUPABASE_URL + '/functions/v1/reporting-api';
@@ -1760,6 +1996,7 @@
     if (view === 'performance') loadPerformance();
     if (view === 'leads') loadLeads();
     if (view === 'alerts') loadAlerts();
+    if (view === 'scopes') loadScopes();
   };
 
   // ══════════════════════════════════════════════════
@@ -1897,6 +2134,11 @@
         if (phone) {
           html += '<a class="quick-btn" href="tel:' + phone.replace(/\s/g, '') + '" onclick="event.stopPropagation()" title="Call">' + phoneIcon() + '</a>';
         }
+        var contactId = item.ghl_contact_id || '';
+        var firstName = ((item.client_name || '').split(' ')[0] || '').replace(/'/g, '');
+        if (contactId && q.category !== 'clean') {
+          html += '<button class="quick-btn sms" onclick="event.stopPropagation();quickFollowUp(\'' + jobId + '\',\'' + contactId + '\',\'' + firstName + '\')" title="Send follow-up SMS"><svg viewBox="0 0 24 24" stroke="var(--sw-blue)" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>';
+        }
         html += '<button class="quick-btn snooze" onclick="event.stopPropagation();snoozeJob(\'' + jobId + '\')" title="Snooze 7 days"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>';
         if (q.category === 'clean') {
           html += '<button class="quick-btn archive" onclick="event.stopPropagation();archiveJob(\'' + jobId + '\',\'' + (item.client_name || '').replace(/'/g, '') + '\')" title="Archive dead quote"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
@@ -1943,6 +2185,34 @@
     if (_lastActionData && _lastPipeData) {
       renderAction(_lastActionData, _lastPipeData);
     }
+  };
+
+  window.quickFollowUp = function(jobId, contactId, firstName) {
+    if (!contactId || !jobId) return;
+    // Dedup: don't send twice to same contact in this session
+    if (_recentSms[contactId] && (Date.now() - _recentSms[contactId]) < 60000) {
+      toast('Already sent follow-up to ' + (firstName || 'this client'), 'info');
+      return;
+    }
+    var message = 'Hi ' + (firstName || 'there') + ', following up on your quote \u2014 any questions?';
+    toast('Sending follow-up to ' + (firstName || 'client') + '...', 'info');
+    _recentSms[contactId] = Date.now();
+
+    fetch(GHL_PROXY + '?action=send_sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _swApiKey },
+      body: JSON.stringify({ contactId: contactId, message: message, jobId: jobId, userId: _user ? _user.id : undefined })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
+      if (!data.success) throw new Error(data.error || 'Send failed');
+      toast('Follow-up sent to ' + (firstName || 'client'), 'success');
+      loadAction();
+    }).catch(function(err) {
+      delete _recentSms[contactId];
+      toast('SMS failed: ' + friendlyError(err), 'error');
+    });
   };
 
   window.snoozeJob = function(jobId) {
@@ -2048,16 +2318,16 @@
 
     // Kanban
     html += '<div class="kanban">';
-    html += renderKanbanCol('New Lead', cols.draft, 'blue');
-    html += renderKanbanCol('Quote Sent', cols.quoted, 'orange');
-    html += renderKanbanCol('Won', cols.accepted, 'green');
+    html += renderKanbanCol('New Lead', cols.draft, 'blue', 'draft');
+    html += renderKanbanCol('Quote Sent', cols.quoted, 'orange', 'quoted');
+    html += renderKanbanCol('Won', cols.accepted, 'green', 'accepted');
     html += renderKanbanColCollapsible('Lost', cols.lost, 'red');
     html += '</div>';
 
     container.innerHTML = html;
   }
 
-  function renderKanbanCol(title, items, color) {
+  function renderKanbanCol(title, items, color, colStatus) {
     var html = '<div class="kanban-col">';
     html += '<div class="kanban-header ' + color + '"><span>' + title + '</span><span class="col-count">' + items.length + '</span></div>';
     html += '<div class="kanban-body">';
@@ -2077,7 +2347,21 @@
           }
           html += '</div>';
         }
-        html += '<div class="kanban-card-days">' + days + ' days in stage</div>';
+        html += '<div class="kanban-card-days">' + days + ' days in stage';
+        // Quick-status dropdown
+        if (colStatus) {
+          html += '<select class="kanban-quick-status" onclick="event.stopPropagation()" onchange="quickStatus(\'' + (j.id || '') + '\',this.value)">';
+          html += '<option value="">Move\u2026</option>';
+          if (colStatus === 'draft') {
+            html += '<option value="quoted">Quoted</option><option value="cancelled">Lost</option>';
+          } else if (colStatus === 'quoted') {
+            html += '<option value="accepted">Won</option><option value="cancelled">Lost</option>';
+          } else if (colStatus === 'accepted') {
+            html += '<option value="quoted">Revert to Quoted</option>';
+          }
+          html += '</select>';
+        }
+        html += '</div>';
         html += '</div>';
       });
     }
@@ -3007,6 +3291,18 @@
   // ══════════════════════════════════════════════════
   // STATUS CHANGE (from slide panel)
   // ══════════════════════════════════════════════════
+  // Quick status change from kanban card dropdown
+  window.quickStatus = function(jobId, newStatus) {
+    if (!jobId || !newStatus) return;
+    var labels = { quoted: 'Quoted', accepted: 'Won', cancelled: 'Lost' };
+    if (!confirm('Move to ' + (labels[newStatus] || newStatus) + '?')) {
+      // Reset the select
+      event.target.value = '';
+      return;
+    }
+    changeJobStatus(jobId, newStatus);
+  };
+
   window.changeJobStatus = function(jobId, newStatus) {
     if (!jobId || !newStatus) return;
     var labels = { quoted: 'Quoted', accepted: 'Won', cancelled: 'Lost' };
@@ -3021,7 +3317,7 @@
       return res.json();
     }).then(function() {
       toast('Status updated to ' + (labels[newStatus] || newStatus), 'success');
-      closeSlide();
+      if (document.getElementById('slidePanel').classList.contains('show')) closeSlide();
       // Reload current view
       if (_currentView === 'action') loadAction();
       else if (_currentView === 'pipeline') loadPipeline();
@@ -3136,6 +3432,355 @@
     dismissed.push(key);
     localStorage.setItem(dismissKey, JSON.stringify(dismissed));
     loadAlerts();
+  };
+
+  // ══════════════════════════════════════════════════
+  // SCOPES CALENDAR TAB
+  // ══════════════════════════════════════════════════
+
+  function getScopeWeekDates() {
+    var now = new Date();
+    var day = now.getDay();
+    var diff = day === 0 ? -6 : 1 - day; // Monday
+    var monday = new Date(now);
+    monday.setDate(now.getDate() + diff + (_scopeWeekOffset * 7));
+    var dates = [];
+    for (var i = 0; i < 5; i++) {
+      var d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      dates.push(d);
+    }
+    return dates;
+  }
+
+  window.loadScopes = function() {
+    var container = document.getElementById('scopesContent');
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading scopes...</div>';
+
+    var dates = getScopeWeekDates();
+    var from = dates[0].toISOString().slice(0, 10);
+    var to = dates[4].toISOString().slice(0, 10);
+
+    Promise.all([
+      opsFetch('calendar', { from: from, to: to }),
+      opsFetch('get_crew_availability', { from: from, to: to }),
+      opsFetch('list_users')
+    ]).then(function(results) {
+      var calData = results[0];
+      var availData = results[1];
+      var usersData = results[2];
+
+      // Get scope events
+      var scopes = (calData.events || []).filter(function(e) { return e.assignment_type === 'scope'; });
+
+      // Build scoper list from users who have scope assignments or known roles
+      var allUsers = usersData.users || usersData || [];
+      var scoperIds = new Set();
+      scopes.forEach(function(s) { if (s.user_id) scoperIds.add(s.user_id); });
+      // Also include users who are estimators/sales
+      allUsers.forEach(function(u) {
+        if (u.role === 'estimator' || u.role === 'sales') scoperIds.add(u.id);
+      });
+      _scoperList = allUsers.filter(function(u) { return scoperIds.has(u.id); });
+      // Fallback: if no scopers found, show all non-admin users
+      if (_scoperList.length === 0) _scoperList = allUsers.filter(function(u) { return u.role !== 'admin'; }).slice(0, 4);
+
+      _scopeData = { scopes: scopes, availability: availData.availability || availData || [] };
+      renderScopesCalendar(dates);
+    }).catch(function(err) {
+      container.innerHTML = '<div class="error-state"><p>Failed to load scopes</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadScopes()" style="margin-top:12px">Retry</button></div>';
+    });
+  };
+
+  function renderScopesCalendar(dates) {
+    var container = document.getElementById('scopesContent');
+    var scopes = _scopeData.scopes || [];
+    var availability = _scopeData.availability || [];
+    var today = new Date().toISOString().slice(0, 10);
+
+    // Build unavailable set
+    var unavailSet = new Set();
+    availability.forEach(function(a) {
+      if (a.status === 'leave' || a.status === 'unavailable') {
+        unavailSet.add(a.user_id + '_' + a.date);
+      }
+    });
+
+    // Group scopes by scoper+date
+    var scopeMap = {}; // "userId_date" → [scope, ...]
+    scopes.forEach(function(s) {
+      var key = (s.user_id || '') + '_' + s.scheduled_date;
+      if (!scopeMap[key]) scopeMap[key] = [];
+      scopeMap[key].push(s);
+    });
+
+    var weekLabel = dates[0].toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) + ' \u2013 ' + dates[4].toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    var html = '';
+
+    // Header
+    html += '<div class="scopes-header">';
+    html += '<div class="scope-week-nav">';
+    html += '<button onclick="scopeWeekNav(-1)">\u2190</button>';
+    html += '<span class="scope-week-label">' + weekLabel + '</span>';
+    html += '<button onclick="scopeWeekNav(1)">\u2192</button>';
+    if (_scopeWeekOffset !== 0) html += '<button onclick="scopeWeekNav(0)" style="margin-left:8px">This Week</button>';
+    html += '</div>';
+    html += '<button class="btn-book-scope" onclick="openBookScope()">+ Book Scope</button>';
+    html += '</div>';
+
+    // Grid
+    html += '<div class="scope-grid">';
+
+    // Header row
+    html += '<div class="scope-grid-header"></div>'; // empty corner
+    dates.forEach(function(d) {
+      var dateStr = d.toISOString().slice(0, 10);
+      var dayName = d.toLocaleDateString('en-AU', { weekday: 'short' });
+      var dayNum = d.getDate();
+      var isToday = dateStr === today;
+      html += '<div class="scope-grid-header' + (isToday ? ' today' : '') + '">' + dayName + ' ' + dayNum + '</div>';
+    });
+
+    // Scoper rows
+    _scoperList.forEach(function(scoper) {
+      // Row label
+      html += '<div class="scope-row-label">' + (scoper.name || 'Unknown') + '</div>';
+
+      // Day cells
+      dates.forEach(function(d) {
+        var dateStr = d.toISOString().slice(0, 10);
+        var key = scoper.id + '_' + dateStr;
+        var isUnavail = unavailSet.has(key);
+        var dayScopes = scopeMap[key] || [];
+
+        html += '<div class="scope-cell' + (isUnavail ? ' unavailable' : '') + '"';
+        if (!isUnavail) {
+          html += ' onclick="openBookScope(\'' + scoper.id + '\',\'' + dateStr + '\')"';
+        }
+        html += '>';
+
+        if (isUnavail) {
+          html += '<div style="font-size:11px;color:var(--sw-text-sec);padding:4px">Leave</div>';
+        } else {
+          dayScopes.forEach(function(s) {
+            var confClass = (s.confirmation_status === 'confirmed') ? ' confirmed' : ' tentative';
+            html += '<div class="scope-card' + confClass + '" onclick="event.stopPropagation();openSlide(\'' + s.job_id + '\')">';
+            html += '<div class="scope-time">' + (s.start_time ? s.start_time.slice(0, 5) : 'TBC') + '</div>';
+            html += '<div class="scope-client">' + (s.client_name || '\u2014') + '</div>';
+            html += '<div class="scope-suburb">' + (s.site_suburb || '') + '</div>';
+            html += '</div>';
+          });
+        }
+        html += '</div>';
+      });
+    });
+
+    html += '</div>'; // end grid
+    container.innerHTML = html;
+  }
+
+  window.scopeWeekNav = function(dir) {
+    if (dir === 0) _scopeWeekOffset = 0;
+    else _scopeWeekOffset += dir;
+    loadScopes();
+  };
+
+  // ── Book Scope Panel ──
+  window.openBookScope = function(scoperId, dateStr) {
+    document.getElementById('bookScopeOverlay').classList.add('show');
+    document.getElementById('bookScopePanel').classList.add('show');
+
+    // Populate scoper dropdown
+    var sel = document.getElementById('bookScoper');
+    sel.innerHTML = '<option value="">Select scoper...</option>';
+    _scoperList.forEach(function(s) {
+      sel.innerHTML += '<option value="' + s.id + '"' + (s.id === scoperId ? ' selected' : '') + '>' + (s.name || s.email) + '</option>';
+    });
+
+    // Set date
+    if (dateStr) document.getElementById('bookDate').value = dateStr;
+    else document.getElementById('bookDate').value = new Date().toISOString().slice(0, 10);
+
+    _bookSelectedTime = null;
+    _bookSelectedJobId = null;
+    _bookSelectedJobSuburb = null;
+    document.getElementById('bookJobSearch').value = '';
+    document.getElementById('bookJobResults').classList.remove('show');
+    document.getElementById('bookSelectedJob').style.display = 'none';
+    document.getElementById('btnBookScope').disabled = true;
+
+    refreshTimeSlots();
+  };
+
+  window.closeBookScope = function() {
+    document.getElementById('bookScopeOverlay').classList.remove('show');
+    document.getElementById('bookScopePanel').classList.remove('show');
+  };
+
+  // Refresh time slots when scoper or date changes
+  document.addEventListener('change', function(e) {
+    if (e.target.id === 'bookScoper' || e.target.id === 'bookDate') {
+      refreshTimeSlots();
+    }
+  });
+
+  function refreshTimeSlots() {
+    var scoperId = document.getElementById('bookScoper').value;
+    var dateStr = document.getElementById('bookDate').value;
+    var grid = document.getElementById('bookTimeSlots');
+    var hint = document.getElementById('bookSuburbHint');
+
+    if (!scoperId || !dateStr) {
+      grid.innerHTML = '<div style="color:var(--sw-text-sec);font-size:12px">Select scoper and date first</div>';
+      hint.style.display = 'none';
+      return;
+    }
+
+    // Find booked times for this scoper+date from cached scope data
+    var bookedTimes = new Set();
+    var existingSuburbs = [];
+    (_scopeData.scopes || []).forEach(function(s) {
+      if (s.user_id === scoperId && s.scheduled_date === dateStr) {
+        if (s.start_time) bookedTimes.add(s.start_time.slice(0, 5));
+        if (s.site_suburb && existingSuburbs.indexOf(s.site_suburb) === -1) existingSuburbs.push(s.site_suburb);
+      }
+    });
+
+    var slots = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00'];
+    var html = '';
+    slots.forEach(function(t) {
+      var isBooked = bookedTimes.has(t);
+      var isActive = _bookSelectedTime === t;
+      var label = parseInt(t) > 12 ? (parseInt(t) - 12) + ':' + t.slice(3) + 'pm' : parseInt(t) + ':' + t.slice(3) + 'am';
+      html += '<button type="button" class="time-slot-btn' + (isBooked ? ' booked' : '') + (isActive ? ' active' : '') + '" onclick="selectTimeSlot(\'' + t + '\')"' + (isBooked ? ' disabled' : '') + '>' + label + '</button>';
+    });
+    grid.innerHTML = html;
+
+    // Suburb hint
+    if (existingSuburbs.length > 0) {
+      var scoperName = '';
+      _scoperList.forEach(function(s) { if (s.id === scoperId) scoperName = s.name; });
+      hint.style.display = 'block';
+      hint.className = 'suburb-hint neutral';
+      hint.innerHTML = '<strong>' + scoperName + '\'s day:</strong> ' + existingSuburbs.join(', ');
+      if (_bookSelectedJobSuburb) {
+        // Check if selected job suburb is in same area
+        var match = existingSuburbs.some(function(s) { return s === _bookSelectedJobSuburb; });
+        if (match) {
+          hint.className = 'suburb-hint good';
+          hint.innerHTML += '<br>Same suburb \u2014 great routing!';
+        }
+      }
+    } else {
+      hint.style.display = 'none';
+    }
+
+    validateBookForm();
+  }
+
+  window.selectTimeSlot = function(time) {
+    _bookSelectedTime = time;
+    refreshTimeSlots();
+  };
+
+  window.searchBookableJobs = function() {
+    clearTimeout(_bookSearchDebounce);
+    _bookSearchDebounce = setTimeout(function() {
+      var q = document.getElementById('bookJobSearch').value.trim();
+      var results = document.getElementById('bookJobResults');
+      if (q.length < 2) { results.classList.remove('show'); return; }
+
+      // Search draft + quoted jobs
+      saleFetch('sales_pipeline').then(function(data) {
+        var cols = data.columns || {};
+        var allJobs = [].concat(cols.draft || [], cols.quoted || []);
+        var matches = allJobs.filter(function(j) {
+          return (j.client_name || '').toLowerCase().indexOf(q.toLowerCase()) !== -1 ||
+                 (j.site_suburb || '').toLowerCase().indexOf(q.toLowerCase()) !== -1;
+        }).slice(0, 8);
+
+        if (matches.length === 0) {
+          results.innerHTML = '<div class="book-job-item" style="color:var(--sw-text-sec)">No matching jobs</div>';
+        } else {
+          var html = '';
+          matches.forEach(function(j) {
+            html += '<div class="book-job-item" onclick="selectBookJob(\'' + j.id + '\',\'' + (j.client_name || '').replace(/'/g, '') + '\',\'' + (j.site_suburb || '').replace(/'/g, '') + '\',\'' + (j.type || '') + '\')">';
+            html += '<div class="bji-name">' + (j.client_name || '\u2014') + '</div>';
+            html += '<div class="bji-meta">' + (j.site_suburb || '') + ' \u00B7 ' + (j.type || '') + ' \u00B7 ' + fmtCurrency(j.quote_value) + '</div>';
+            html += '</div>';
+          });
+          results.innerHTML = html;
+        }
+        results.classList.add('show');
+      });
+    }, 300);
+  };
+
+  window.selectBookJob = function(jobId, clientName, suburb, type) {
+    _bookSelectedJobId = jobId;
+    _bookSelectedJobSuburb = suburb;
+    document.getElementById('bookJobSearch').value = '';
+    document.getElementById('bookJobResults').classList.remove('show');
+    var sel = document.getElementById('bookSelectedJob');
+    sel.style.display = 'block';
+    sel.innerHTML = '<div style="padding:8px 12px;background:var(--sw-light);border-radius:6px;font-size:13px"><strong>' + clientName + '</strong><br><span style="color:var(--sw-text-sec)">' + suburb + ' \u00B7 ' + type + '</span><button onclick="clearBookJob()" style="float:right;border:none;background:none;cursor:pointer;color:var(--sw-red)">\u2715</button></div>';
+    refreshTimeSlots();
+    validateBookForm();
+  };
+
+  window.clearBookJob = function() {
+    _bookSelectedJobId = null;
+    _bookSelectedJobSuburb = null;
+    document.getElementById('bookSelectedJob').style.display = 'none';
+    refreshTimeSlots();
+    validateBookForm();
+  };
+
+  function validateBookForm() {
+    var scoperId = document.getElementById('bookScoper').value;
+    var dateStr = document.getElementById('bookDate').value;
+    document.getElementById('btnBookScope').disabled = !scoperId || !dateStr || !_bookSelectedTime || !_bookSelectedJobId;
+  }
+
+  window.submitBookScope = function() {
+    var scoperId = document.getElementById('bookScoper').value;
+    var dateStr = document.getElementById('bookDate').value;
+    if (!scoperId || !dateStr || !_bookSelectedTime || !_bookSelectedJobId) return;
+
+    var scoperName = '';
+    _scoperList.forEach(function(s) { if (s.id === scoperId) scoperName = s.name; });
+
+    document.getElementById('btnBookScope').disabled = true;
+    document.getElementById('btnBookScope').textContent = 'Booking...';
+
+    fetch(OPS_API + '?action=create_assignment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _swApiKey },
+      body: JSON.stringify({
+        job_id: _bookSelectedJobId,
+        user_id: scoperId,
+        scheduled_date: dateStr,
+        start_time: _bookSelectedTime,
+        end_time: (parseInt(_bookSelectedTime) + 1).toString().padStart(2, '0') + ':00',
+        assignment_type: 'scope',
+        crew_name: scoperName,
+        role: 'estimator',
+        confirmation_status: 'tentative'
+      })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
+      if (data.error) throw new Error(data.error);
+      toast('Scope booked for ' + scoperName + ' on ' + dateStr + ' at ' + _bookSelectedTime, 'success');
+      closeBookScope();
+      loadScopes();
+    }).catch(function(err) {
+      toast('Booking failed: ' + friendlyError(err), 'error');
+      document.getElementById('btnBookScope').disabled = false;
+      document.getElementById('btnBookScope').textContent = 'Book Scope';
+    });
   };
 
   // ══════════════════════════════════════════════════
