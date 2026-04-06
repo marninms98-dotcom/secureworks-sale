@@ -1178,10 +1178,60 @@
     .urgency-dot.amber { background: var(--sw-yellow); }
     .urgency-dot.blue { background: var(--sw-blue); }
     .urgency-dot.green { background: var(--sw-green); }
+    .urgency-dot.grey { background: #B0B8C1; }
     .priority-info { flex: 1; min-width: 0; }
     .priority-name { font-size: 14px; font-weight: 600; color: var(--sw-text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .priority-detail { font-size: 12px; color: var(--sw-text-sec); margin-top: 1px; }
     .priority-value { font-size: 13px; font-weight: 600; font-family: var(--sw-font-num); color: var(--sw-text); white-space: nowrap; }
+
+    /* Quick action buttons on priority items */
+    .quick-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+    .quick-btn {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      border: 1px solid var(--sw-border);
+      background: var(--sw-card);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      padding: 0;
+    }
+    .quick-btn:hover { background: var(--sw-light); border-color: var(--sw-mid); }
+    .quick-btn svg { width: 14px; height: 14px; stroke-width: 2; fill: none; }
+    .quick-btn.snooze svg { stroke: var(--sw-yellow); }
+    .quick-btn.archive svg { stroke: var(--sw-red); }
+    .quick-btn.disabled { opacity: 0.4; pointer-events: none; }
+
+    /* Category filter chips */
+    .category-chips {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .category-chip {
+      padding: 5px 12px;
+      border-radius: 100px;
+      border: 1px solid var(--sw-border);
+      background: var(--sw-card);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--sw-text-sec);
+    }
+    .category-chip.active { background: var(--sw-dark); color: #fff; border-color: var(--sw-dark); }
+    .category-chip .chip-count { font-weight: 400; opacity: 0.7; margin-left: 3px; }
+
+    /* Last contact sub-line */
+    .last-contact { font-size: 11px; color: var(--sw-text-sec); opacity: 0.7; }
 
     /* ══════════════════════════════════════════════════
        ALERT CARDS (Alerts tab)
@@ -1472,6 +1522,9 @@
   var _chartWeekly = null;
   var _chartType = null;
   var _pipelineTypeFilter = 'all';
+  var _actionCategoryFilter = 'all';
+  var _lastActionData = null;  // cache for re-rendering with filter
+  var _lastPipeData = null;
   var _performancePeriod = 'this_month';
   var _customFrom = '';
   var _customTo = '';
@@ -1723,6 +1776,8 @@
     ]).then(function(results) {
       var data = results[0];
       var pipeData = results[1];
+      _lastActionData = data;
+      _lastPipeData = pipeData;
       renderAction(data, pipeData);
     }).catch(function(err) {
       container.innerHTML = '<div class="error-state"><p>Failed to load dashboard</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadAction()" style="margin-top:12px">Retry</button></div>';
@@ -1753,65 +1808,100 @@
     var followUps = actions.follow_ups_due || [];
     var scopesToday = actions.scope_visits_today || [];
     var quotesExpiring = actions.quotes_expiring || [];
+    var staleQuotes = actions.stale_quotes || [];
 
     var queue = [];
 
-    // Speed-to-lead (draft > 24h) — critical red
+    // Speed-to-lead (draft > 24h) — critical red → category: hot
     needsContact.forEach(function(item) {
       var days = daysCount(item.created_at || item.date);
       if (days >= 1) {
-        queue.push({ priority: 1, color: 'red', label: 'Waiting ' + fmtDaysAgo(item.created_at || item.date), item: item });
+        queue.push({ priority: 1, color: 'red', label: 'Waiting ' + fmtDaysAgo(item.created_at || item.date), item: item, category: 'hot' });
       }
     });
 
-    // Quotes expiring (> 21 days) — critical red
+    // Quotes expiring (> 21 days, high value) — critical red → category: hot
     quotesExpiring.forEach(function(item) {
-      queue.push({ priority: 2, color: 'red', label: 'Quote expiring', item: item });
+      queue.push({ priority: 2, color: 'red', label: 'Quote expiring', item: item, category: 'hot' });
     });
 
-    // Follow-ups due — amber
+    // Follow-ups due (7-60 days) — amber → category: warm
     followUps.forEach(function(item) {
-      queue.push({ priority: 3, color: 'amber', label: 'Follow-up due', item: item });
+      queue.push({ priority: 3, color: 'amber', label: 'Follow-up due', item: item, category: 'warm' });
     });
 
-    // Scope visits today — blue
+    // Scope visits today — blue → category: hot
     scopesToday.forEach(function(item) {
-      queue.push({ priority: 4, color: 'blue', label: 'Scope today', item: item });
+      queue.push({ priority: 4, color: 'blue', label: 'Scope today', item: item, category: 'hot' });
     });
 
-    // New leads (< 24h) — green
+    // New leads (< 24h) — green → category: hot
     needsContact.forEach(function(item) {
       var days = daysCount(item.created_at || item.date);
       if (days < 1) {
-        queue.push({ priority: 5, color: 'green', label: 'New lead', item: item });
+        queue.push({ priority: 5, color: 'green', label: 'New lead', item: item, category: 'hot' });
       }
+    });
+
+    // Stale quotes (> 60 days) — grey → category: clean
+    staleQuotes.forEach(function(item) {
+      queue.push({ priority: 6, color: 'grey', label: 'Stale ' + (item.days_since_quoted || '60+') + 'd', item: item, category: 'clean' });
     });
 
     // Sort by priority
     queue.sort(function(a, b) { return a.priority - b.priority; });
 
-    var totalActions = queue.length;
+    // Category counts for filter chips
+    var catCounts = { all: queue.length, hot: 0, warm: 0, clean: 0 };
+    queue.forEach(function(q) { if (catCounts[q.category] !== undefined) catCounts[q.category]++; });
+
+    // Category filter chips
+    html += '<div class="category-chips">';
+    ['all', 'hot', 'warm', 'clean'].forEach(function(cat) {
+      var label = cat === 'all' ? 'All' : cat === 'hot' ? 'Hot' : cat === 'warm' ? 'Warm' : 'Stale';
+      var active = (_actionCategoryFilter || 'all') === cat ? ' active' : '';
+      html += '<button class="category-chip' + active + '" onclick="filterActionCategory(\'' + cat + '\')">' + label + '<span class="chip-count">' + catCounts[cat] + '</span></button>';
+    });
+    html += '</div>';
+
+    // Apply category filter
+    var filteredQueue = queue;
+    if (_actionCategoryFilter && _actionCategoryFilter !== 'all') {
+      filteredQueue = queue.filter(function(q) { return q.category === _actionCategoryFilter; });
+    }
+
+    var totalActions = filteredQueue.length;
     html += '<div class="section-heading">Priority Queue <span class="badge">' + totalActions + '</span></div>';
 
-    if (queue.length > 0) {
+    if (filteredQueue.length > 0) {
       html += '<div class="priority-queue">';
-      queue.forEach(function(q) {
+      filteredQueue.forEach(function(q) {
         var item = q.item;
         var phone = item.phone || item.client_phone || '';
         var days = daysCount(item.created_at || item.date || item.quoted_at);
         var dCls = daysClass(days);
         var jobId = item.job_id || item.id || '';
+        var lastContact = item.last_event_at ? relativeTime(item.last_event_at) : '';
         html += '<div class="priority-item" onclick="openSlide(\'' + jobId + '\')">';
         html += '<span class="urgency-dot ' + q.color + '"></span>';
         html += '<div class="priority-info"><div class="priority-name">' + (item.client_name || '\u2014') + ' ' + typePill(item.type) + '</div>';
-        html += '<div class="priority-detail">' + (item.suburb || item.site_suburb || '') + ' \u00B7 ' + q.label + '</div></div>';
+        html += '<div class="priority-detail">' + (item.suburb || item.site_suburb || '') + ' \u00B7 ' + q.label + '</div>';
+        if (lastContact) html += '<div class="last-contact">Last contact: ' + lastContact + '</div>';
+        html += '</div>';
         if (item.quote_value || item.value) {
           html += '<span class="priority-value">' + fmtCurrency(item.quote_value || item.value) + '</span>';
         }
         html += '<span class="action-item-days ' + dCls + '">' + fmtDaysAgo(item.created_at || item.date || item.quoted_at) + '</span>';
+        // Quick action buttons
+        html += '<div class="quick-actions">';
         if (phone) {
-          html += '<a class="action-item-phone" href="tel:' + phone.replace(/\s/g, '') + '" onclick="event.stopPropagation()">' + phoneIcon() + '</a>';
+          html += '<a class="quick-btn" href="tel:' + phone.replace(/\s/g, '') + '" onclick="event.stopPropagation()" title="Call">' + phoneIcon() + '</a>';
         }
+        html += '<button class="quick-btn snooze" onclick="event.stopPropagation();snoozeJob(\'' + jobId + '\')" title="Snooze 7 days"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>';
+        if (q.category === 'clean') {
+          html += '<button class="quick-btn archive" onclick="event.stopPropagation();archiveJob(\'' + jobId + '\',\'' + (item.client_name || '').replace(/'/g, '') + '\')" title="Archive dead quote"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+        }
+        html += '</div>';
         html += '</div>';
       });
       html += '</div>';
@@ -1844,6 +1934,58 @@
 
     container.innerHTML = html;
   }
+
+  // ══════════════════════════════════════════════════
+  // CATEGORY FILTER + SNOOZE + ARCHIVE
+  // ══════════════════════════════════════════════════
+  window.filterActionCategory = function(cat) {
+    _actionCategoryFilter = cat;
+    if (_lastActionData && _lastPipeData) {
+      renderAction(_lastActionData, _lastPipeData);
+    }
+  };
+
+  window.snoozeJob = function(jobId) {
+    if (!jobId) return;
+    var btn = event && event.target ? event.target.closest('.quick-btn') : null;
+    if (btn) { btn.classList.add('disabled'); btn.innerHTML = '...'; }
+
+    fetch(REPORT_API + '?action=sales_snooze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _swApiKey },
+      body: JSON.stringify({ job_id: jobId, days: 7 })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
+      if (data.error) throw new Error(data.error);
+      toast('Snoozed for 7 days', 'success');
+      loadAction();
+    }).catch(function(err) {
+      toast('Snooze failed: ' + friendlyError(err), 'error');
+      if (btn) { btn.classList.remove('disabled'); }
+    });
+  };
+
+  window.archiveJob = function(jobId, clientName) {
+    if (!jobId) return;
+    if (!confirm('Archive "' + (clientName || 'this quote') + '" as dead? This moves it to Lost.')) return;
+
+    fetch(REPORT_API + '?action=sales_quick_action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _swApiKey },
+      body: JSON.stringify({ job_id: jobId, action_type: 'archive' })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }).then(function(data) {
+      if (data.error) throw new Error(data.error);
+      toast('Quote archived', 'success');
+      loadAction();
+    }).catch(function(err) {
+      toast('Archive failed: ' + friendlyError(err), 'error');
+    });
+  };
 
   // ══════════════════════════════════════════════════
   // PIPELINE TAB
