@@ -1515,7 +1515,6 @@
     body.v2-mode { background: var(--warm-100); }
     body.v2-mode .header-nav button:not([data-view="cockpit"]),
     body.v2-mode .bottom-nav button:not([data-view="cockpit"]) { display:none; }
-    body.v2-mode .bottom-nav { display:none; }  /* cockpit is desktop-first */
 
     #viewCockpit { display:none; }
     #viewCockpit.active { display:block; }
@@ -1567,6 +1566,25 @@
       align-items: start;
     }
     @media (max-width: 1024px) { .ck-columns { grid-template-columns: 1fr; } }
+
+    /* Mobile layout — usable at iPhone widths, not just desktop */
+    @media (max-width: 700px) {
+      .ck-shell { padding: 0 16px 80px; }
+      .ck-hero { padding: 28px 20px 32px; margin: 0 -16px 24px; }
+      .ck-hero-grid { grid-template-columns: 1fr; gap: 20px; align-items: start; }
+      .ck-hero-name { font-size: 34px; }
+      .ck-hero-num { font-size: 44px; }
+      .ck-hero-num-small { font-size: 20px; }
+      .ck-card { padding: 18px 20px; gap: 10px 16px; grid-template-columns: 1fr auto; }
+      .ck-card-client { font-size: 19px; }
+      .ck-card-value-num { font-size: 22px; }
+      .ck-card-actions { gap: 6px; }
+      .ck-btn { padding: 8px 12px; font-size: 11px; }
+      .ck-panel, .ck-panel-dark { padding: 22px 20px; }
+      .ck-comm-big { font-size: 42px; }
+      .ck-section-title h2 { font-size: 12px; }
+      .ck-modal { padding: 24px 22px; }
+    }
 
     /* Queue card — editorial typography, sharp edges, asymmetric */
     .ck-queue { display: flex; flex-direction: column; gap: 14px; }
