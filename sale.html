@@ -1806,6 +1806,7 @@
           <h2>Work Queue</h2>
           <div class="ck-count" id="ckQueueCount"></div>
         </div>
+        <div id="ckUnmonitored" style="display:none; background:var(--warm-200); padding:12px 16px; margin-bottom:14px; border-left:3px solid var(--blue-400); font-size:12px; color:var(--blue-800); line-height:1.6;"></div>
         <div class="ck-queue" id="ckQueue">
           <div class="ck-loading">Loading…</div>
         </div>
@@ -4225,6 +4226,23 @@
   function ckRenderQueue(data) {
     var el = document.getElementById('ckQueue');
     if (!el) return;
+
+    // Transparency banner — jobs we can't monitor because they lack GHL signal
+    var umEl = document.getElementById('ckUnmonitored');
+    if (umEl && data && data.unmonitored) {
+      var u = data.unmonitored;
+      var hidden = (u.stale_quote || 0) + (u.new_uncontacted || 0);
+      var noGhl = u.total_jobs_without_ghl || 0;
+      if (hidden > 0 || noGhl > 0) {
+        umEl.style.display = 'block';
+        umEl.innerHTML = '<b>' + hidden + ' card' + (hidden===1?'':'s') + ' hidden — no GHL signal for that job.</b> '
+          + noGhl + ' of this rep\'s active jobs have no ghl_contact_id, so we can\'t detect follow-up. '
+          + 'Link them in GHL to see them in the queue.';
+      } else {
+        umEl.style.display = 'none';
+      }
+    }
+
     var cards = (data && data.cards) || [];
     if (cards.length === 0) {
       el.innerHTML = '<div class="ck-empty"><div class="ck-empty-icon">✓</div><div style="font-weight:700; color:var(--blue-800); font-size:15px; letter-spacing:0.05em; text-transform:uppercase;">Queue Clear</div><div style="margin-top:8px;">No urgent actions. Keep feeding the pipeline.</div></div>';
