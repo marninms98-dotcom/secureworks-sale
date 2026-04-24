@@ -1658,6 +1658,17 @@
     .ck-comm-grid .lbl { font-size: 10px; letter-spacing: 0.22em; text-transform:uppercase; color: rgba(255,255,255,0.45); margin-top:4px; font-weight:700; }
     .ck-comm-formula { margin-top: 22px; padding-top:16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 11px; color: rgba(255,255,255,0.5); line-height:1.6; }
 
+    /* Admin rep switcher — only visible when _isAdmin */
+    .ck-rep-switch { display:none; gap: 8px; margin-top: 18px; }
+    body.v2-mode.is-admin .ck-rep-switch { display: flex; }
+    .ck-rep-btn {
+      font-size: 11px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
+      padding: 8px 14px; border: 1px solid rgba(255,255,255,0.18); background: transparent;
+      color: rgba(255,255,255,0.7); cursor: pointer; border-radius: 3px; transition: all .15s;
+    }
+    .ck-rep-btn:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+    .ck-rep-btn.is-active { background: var(--orange-700); border-color: var(--orange-700); color: #fff; }
+
     /* Empty + loading */
     .ck-empty { text-align:center; padding: 60px 20px; color: var(--blue-600); }
     .ck-empty-icon { font-size: 48px; color: var(--blue-400); margin-bottom: 12px; line-height:1; }
@@ -1769,6 +1780,10 @@
           <div class="ck-label is-orange">Rep Cockpit</div>
           <div class="ck-hero-name" id="ckHeroName">—</div>
           <div class="ck-hero-sub" id="ckHeroSub">Loading your queue…</div>
+          <div class="ck-rep-switch" id="ckRepSwitch" role="group" aria-label="Select rep view">
+            <button class="ck-rep-btn" data-rep-id="be6c2188-2b7b-49c7-b6e4-5b0d0deb6415" onclick="ckSelectRep(this)">Khairo · Fencing</button>
+            <button class="ck-rep-btn" data-rep-id="5862cf1d-0a3b-4836-8fd1-d69f95aa2f73" onclick="ckSelectRep(this)">Nithin · Patios</button>
+          </div>
         </div>
         <div>
           <div class="ck-label">This Week</div>
@@ -4095,6 +4110,22 @@
   // ══════════════════════════════════════════════════
 
   var _ckLostJobId = null;
+  var _ckRepId = null;  // admin-selected rep override; null = use logged-in user's id
+  var CK_KHAIRO = 'be6c2188-2b7b-49c7-b6e4-5b0d0deb6415';
+  var CK_NITHIN = '5862cf1d-0a3b-4836-8fd1-d69f95aa2f73';
+
+  window.ckSelectRep = function(btn) {
+    _ckRepId = btn.getAttribute('data-rep-id');
+    document.querySelectorAll('.ck-rep-btn').forEach(function(b) { b.classList.toggle('is-active', b === btn); });
+    ckLoad();
+  };
+
+  function ckEffectiveRepId() {
+    // Admins can override via switcher; defaults to logged-in user's id if they're one of the two reps.
+    if (_ckRepId) return _ckRepId;
+    if (_user && (_user.id === CK_KHAIRO || _user.id === CK_NITHIN)) return _user.id;
+    return '';  // admin with no pick yet — queue returns admin-wide, commission shows placeholder
+  }
 
   function ckFmtMoney(n) {
     n = Number(n) || 0;
@@ -4113,16 +4144,22 @@
   }
 
   window.ckLoad = function() {
+    // Tag body so admin switcher CSS can unhide
+    if (_isAdmin) document.body.classList.add('is-admin');
+
     var queueEl = document.getElementById('ckQueue');
     if (queueEl) queueEl.innerHTML = '<div class="ck-loading">Loading queue…</div>';
 
+    var repId = ckEffectiveRepId();
+    var extra = repId ? { rep_user_id: repId } : {};
+
     Promise.all([
-      saleFetch('rep_queue'),
-      saleFetch('commission_summary', { period: 'month' }),
-      saleFetch('commission_summary', { period: 'week' }),
-      saleFetch('commission_summary', { period: 'ytd' })
+      saleFetch('rep_queue', extra),
+      saleFetch('commission_summary', Object.assign({ period: 'month' }, extra)),
+      saleFetch('commission_summary', Object.assign({ period: 'week' }, extra)),
+      saleFetch('commission_summary', Object.assign({ period: 'ytd' }, extra))
     ]).then(function(results) {
-      ckRenderHero(results[0], results[2]);      // queue + this-week commission
+      ckRenderHero(results[0], results[2]);
       ckRenderQueue(results[0]);
       ckRenderCommission(results[1], results[2], results[3]);
     }).catch(function(err) {
@@ -4131,15 +4168,32 @@
   };
 
   function ckRenderHero(queueData, commWeek) {
-    var name = (_user && _user.name) ? _user.name.split(' ')[0] : (_user && _user.email ? _user.email.split('@')[0] : 'Rep');
-    document.getElementById('ckHeroName').textContent = name + '.';
-    var sub = 'Your queue is ranked by money at risk. Work top-down.';
-    if (queueData && queueData.rep_types && queueData.rep_types !== 'all') {
-      sub = name + ' · ' + (Array.isArray(queueData.rep_types) ? queueData.rep_types.join(' + ') : queueData.rep_types);
-    } else if (_isAdmin) {
-      sub = 'Admin view · all reps';
+    // Header name reflects the ACTIVE cockpit (switcher selection wins over logged-in user for admins)
+    var effectiveId = ckEffectiveRepId();
+    var displayName;
+    if (effectiveId === CK_KHAIRO) displayName = 'Khairo';
+    else if (effectiveId === CK_NITHIN) displayName = 'Nithin';
+    else if (_user && _user.name) displayName = _user.name.split(' ')[0];
+    else displayName = 'Rep';
+
+    document.getElementById('ckHeroName').textContent = displayName + '.';
+
+    var sub;
+    if (_isAdmin && !effectiveId) {
+      sub = 'Admin view · pick a rep to see their cockpit';
+    } else if (_isAdmin && _ckRepId) {
+      sub = 'Admin impersonating · ' + (effectiveId === CK_KHAIRO ? 'Fencing' : 'Patios + Decking');
+    } else if (queueData && queueData.rep_types && queueData.rep_types !== 'all') {
+      sub = displayName + ' · ' + (Array.isArray(queueData.rep_types) ? queueData.rep_types.join(' + ') : queueData.rep_types);
+    } else {
+      sub = 'Your queue is ranked by money at risk. Work top-down.';
     }
     document.getElementById('ckHeroSub').textContent = sub;
+
+    // Keep switcher state in sync
+    document.querySelectorAll('.ck-rep-btn').forEach(function(b) {
+      b.classList.toggle('is-active', b.getAttribute('data-rep-id') === effectiveId);
+    });
 
     var n = (queueData && queueData.cards) ? queueData.cards.length : 0;
     document.getElementById('ckHeroQueue').textContent = n;
@@ -4219,7 +4273,12 @@
         'GP source · pricing_json.margin_pct with baseline fallback (fencing ' + fenc + '% · patio ' + patio + '%)<br>' +
         'Earned trigger · deposit paid';
     } else if (monthData && monthData.error) {
-      document.getElementById('ckCommFormula').textContent = monthData.error;
+      // Admin view with no rep selected — don't scream error; guide.
+      if (/rep_user_id required/i.test(monthData.error)) {
+        document.getElementById('ckCommFormula').textContent = 'Pick a rep above to see their commission.';
+      } else {
+        document.getElementById('ckCommFormula').textContent = monthData.error;
+      }
     }
   }
 
