@@ -638,7 +638,16 @@
       background: rgba(0,0,0,0.4);
       z-index: 199;
     }
-    .slide-overlay.show { display: block; }
+    /* Detail panel must be non-obscuring: drop the dark dimming backdrop
+       so the kanban behind stays scannable. Click-outside-to-close still
+       works via the X button + Escape key (wired further down). */
+    .slide-overlay.show { display: none; }
+    /* Desktop: when the detail panel is open, push body content left by
+       the panel width so cards aren't sitting under the panel. Mobile
+       (<=768px) uses the existing 100vw panel + no shift. */
+    @media (min-width: 769px) {
+      body.slide-open { padding-right: 416px; transition: padding-right 0.25s ease; }
+    }
     .slide-panel {
       position: fixed;
       right: 0;
@@ -2701,6 +2710,7 @@
     document.getElementById('slideNote').value = '';
     document.getElementById('slideOverlay').classList.add('show');
     document.getElementById('slidePanel').classList.add('show');
+    document.body.classList.add('slide-open');
 
     // Use ops-api job_detail for full job data including ghl_contact_id
     fetch(OPS_API + '?action=job_detail&job_id=' + encodeURIComponent(jobId), { headers: { 'x-api-key': _swApiKey } }).then(function(res) {
@@ -3153,6 +3163,7 @@
   window.closeSlide = function() {
     document.getElementById('slideOverlay').classList.remove('show');
     document.getElementById('slidePanel').classList.remove('show');
+    document.body.classList.remove('slide-open');
     _slideJobId = null;
     _slideContactId = null;
     _slideContactData = null;
