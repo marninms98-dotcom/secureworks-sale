@@ -2035,6 +2035,7 @@
   var _searchDebounce = null;
   var _chartWeekly = null;
   var _chartType = null;
+  var _chartWeeklyByType = null;
   var _pipelineTypeFilter = 'all';
   var _actionCategoryFilter = 'all';
   var _lastActionData = null;  // cache for re-rendering with filter
@@ -3304,6 +3305,9 @@
     // By type chart
     html += '<div class="chart-panel"><h4>By Job Type</h4><div class="chart-wrap" style="max-width:280px;margin:0 auto"><canvas id="chartType" height="280"></canvas></div></div>';
 
+    // Quoted vs Accepted by Type — last 12 weeks
+    html += '<div class="chart-panel" style="grid-column:1/-1"><h4>Quoted vs Accepted by Type — Last 12 Weeks</h4><div class="chart-wrap" style="height:280px"><canvas id="chartWeeklyByType"></canvas></div><div id="chartWeeklyByTypeNote" style="font-size:11px;color:var(--sw-text-sec);margin-top:6px"></div></div>';
+
     // Funnel
     var funnelData = funnel.stages || funnel || [];
     html += '<div class="chart-panel"><h4>Sales Funnel</h4>';
@@ -3448,6 +3452,62 @@
           plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 12 } } } }
         }
       });
+    }
+
+    // Quoted vs Accepted by Type (last 12 weeks, stacked-grouped bars)
+    var byTypeCanvas = document.getElementById('chartWeeklyByType');
+    if (byTypeCanvas) {
+      if (_chartWeeklyByType) { _chartWeeklyByType.destroy(); _chartWeeklyByType = null; }
+      var wks = (weekly && weekly.weeks) || weekly || [];
+      var btLabels = [];
+      var qFenc = [], qPat = [], bFenc = [], bPat = [];
+      var noteCounts = { qFencN: 0, qPatN: 0, bFencN: 0, bPatN: 0 };
+      if (Array.isArray(wks)) {
+        wks.forEach(function(w) {
+          var d = w.week ? new Date(w.week + 'T00:00:00') : null;
+          btLabels.push(d ? (d.getDate() + '/' + (d.getMonth() + 1)) : (w.week || ''));
+          var qbt = w.quoted_by_type || {};
+          var bbt = w.booked_by_type || {};
+          var qcbt = w.quoted_count_by_type || {};
+          var bcbt = w.booked_count_by_type || {};
+          qFenc.push(Math.round((qbt.fencing || 0) / 1000));
+          qPat.push(Math.round((qbt.patio || 0) / 1000));
+          bFenc.push(Math.round((bbt.fencing || 0) / 1000));
+          bPat.push(Math.round((bbt.patio || 0) / 1000));
+          noteCounts.qFencN += (qcbt.fencing || 0);
+          noteCounts.qPatN  += (qcbt.patio || 0);
+          noteCounts.bFencN += (bcbt.fencing || 0);
+          noteCounts.bPatN  += (bcbt.patio || 0);
+        });
+      }
+      _chartWeeklyByType = new Chart(byTypeCanvas, {
+        type: 'bar',
+        data: {
+          labels: btLabels,
+          datasets: [
+            { label: 'Quoted Fencing ($K)',   data: qFenc, backgroundColor: 'rgba(241,90,41,0.85)',  stack: 'quoted',   borderRadius: 3 },
+            { label: 'Quoted Patio ($K)',     data: qPat,  backgroundColor: 'rgba(52,152,219,0.85)', stack: 'quoted',   borderRadius: 3 },
+            { label: 'Accepted Fencing ($K)', data: bFenc, backgroundColor: 'rgba(196,72,31,0.95)',  stack: 'accepted', borderRadius: 3 },
+            { label: 'Accepted Patio ($K)',   data: bPat,  backgroundColor: 'rgba(31,109,165,0.95)', stack: 'accepted', borderRadius: 3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } },
+                     tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': $' + (ctx.parsed.y || 0) + 'K'; } } } },
+          scales: {
+            x: { stacked: true, ticks: { font: { size: 11 } }, grid: { display: false } },
+            y: { stacked: true, beginAtZero: true, title: { display: true, text: '$ thousands inc GST', font: { size: 11 } }, ticks: { font: { size: 11 } }, grid: { color: 'rgba(41,60,70,0.06)' } }
+          }
+        }
+      });
+      var noteEl = document.getElementById('chartWeeklyByTypeNote');
+      if (noteEl) {
+        noteEl.textContent = 'Quoted bars on the left of each week, accepted on the right (stacked: fencing + patio). 12-week totals — quoted: '
+          + noteCounts.qFencN + ' fencing + ' + noteCounts.qPatN + ' patio · accepted: '
+          + noteCounts.bFencN + ' fencing + ' + noteCounts.bPatN + ' patio. $ value uses pricing_json.totalIncGST; jobs without that field are counted but contribute $0.';
+      }
     }
   }
 
