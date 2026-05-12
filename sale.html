@@ -2040,6 +2040,7 @@
   var _actionCategoryFilter = 'all';
   var _lastActionData = null;  // cache for re-rendering with filter
   var _lastPipeData = null;
+  var _pipePromise = null;     // in-flight sales_pipeline fetch shared between Today + Pipeline tabs
   var _performancePeriod = 'this_month';
   var _customFrom = '';
   var _customTo = '';
@@ -2301,20 +2302,37 @@
     var container = document.getElementById('actionContent');
     container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading your dashboard...</div>';
 
-    // Fetch summary + pipeline in parallel for stat strip
-    Promise.all([
-      saleFetch('sales_summary'),
-      saleFetch('sales_pipeline')
-    ]).then(function(results) {
-      var data = results[0];
-      var pipeData = results[1];
+    // Invalidate stale pipeline cache before kicking off the new view so a
+    // mid-flight rep switch can't show last-rep pipeline value.
+    _lastPipeData = null;
+    _pipePromise = null;
+
+    // Render the Actions tab from sales_summary alone — first useful paint
+    // does not wait on sales_pipeline (which is only needed for the Pipeline
+    // stat-card value here, and for the Pipeline tab when the user clicks it).
+    saleFetch('sales_summary').then(function(data) {
       _lastActionData = data;
-      _lastPipeData = pipeData;
-      renderAction(data, pipeData);
+      renderAction(data, _lastPipeData);
     }).catch(function(err) {
       container.innerHTML = '<div class="error-state"><p>Failed to load dashboard</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadAction()" style="margin-top:12px">Retry</button></div>';
     });
+
+    // Background-fetch sales_pipeline; update the Pipeline stat-card in place
+    // when it arrives. Cached so loadPipeline() reuses it instead of refetching.
+    _pipePromise = saleFetch('sales_pipeline').then(function(pipeData) {
+      _lastPipeData = pipeData;
+      updatePipelineStatValue(pipeData && pipeData.pipeline_value);
+      return pipeData;
+    }).catch(function(err) {
+      _pipePromise = null;
+      console.warn('background sales_pipeline fetch failed', err);
+    });
   };
+
+  function updatePipelineStatValue(value) {
+    var el = document.getElementById('pipelineStatValue');
+    if (el) el.textContent = fmtCurrency(value || 0);
+  }
 
   function renderAction(data, pipeData) {
     var container = document.getElementById('actionContent');
@@ -2322,7 +2340,9 @@
     var bookedWeek = data.booked_this_week || {};
     var closeRate = data.close_rate_month || 0;
     var closeColor = closeRate >= 40 ? 'green' : 'amber';
-    var pipelineValue = pipeData.pipeline_value || 0;
+    var pipelineKnown = pipeData && typeof pipeData.pipeline_value === 'number';
+    var pipelineValue = pipelineKnown ? pipeData.pipeline_value : 0;
+    var pipelineDisplay = pipelineKnown ? fmtCurrency(pipelineValue) : '—';
 
     var html = '';
 
@@ -2331,7 +2351,7 @@
     html += '<div class="stat-card border-orange"><div class="stat-icon orange"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-body"><div class="stat-label">Quotes This Week</div><div class="stat-value">' + (quotesWeek.count || 0) + '</div><div class="stat-sub">' + fmtCurrency(quotesWeek.value) + '</div></div></div>';
     html += '<div class="stat-card border-green"><div class="stat-icon green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-body"><div class="stat-label">Jobs Won</div><div class="stat-value">' + (bookedWeek.count || 0) + '</div><div class="stat-sub">' + fmtCurrency(bookedWeek.value) + '</div></div></div>';
     html += '<div class="stat-card border-' + closeColor + '"><div class="stat-icon ' + closeColor + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-body"><div class="stat-label">Close Rate</div><div class="stat-value">' + closeRate + '%</div><div class="stat-sub">this month</div></div></div>';
-    html += '<div class="stat-card border-blue"><div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="stat-body"><div class="stat-label">Pipeline</div><div class="stat-value">' + fmtCurrency(pipelineValue) + '</div><div class="stat-sub">quoted value</div></div></div>';
+    html += '<div class="stat-card border-blue"><div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="stat-body"><div class="stat-label">Pipeline</div><div class="stat-value" id="pipelineStatValue">' + pipelineDisplay + '</div><div class="stat-sub">quoted value</div></div></div>';
     html += '</div>';
 
     // Build unified priority queue
@@ -2477,7 +2497,9 @@
   // ══════════════════════════════════════════════════
   window.filterActionCategory = function(cat) {
     _actionCategoryFilter = cat;
-    if (_lastActionData && _lastPipeData) {
+    if (_lastActionData) {
+      // _lastPipeData may still be null (background pipeline fetch in flight);
+      // renderAction handles the null case with a placeholder.
       renderAction(_lastActionData, _lastPipeData);
     }
   };
@@ -2557,14 +2579,36 @@
   // ══════════════════════════════════════════════════
   window.loadPipeline = function() {
     var container = document.getElementById('pipelineContent');
+
+    // Reuse pipeline data already fetched by loadAction (or another tab visit).
+    if (_lastPipeData) {
+      renderPipeline(_lastPipeData);
+      return;
+    }
     container.innerHTML = '<div class="loading-state"><div class="spinner"></div>Loading pipeline...</div>';
 
-    saleFetch('sales_pipeline').then(function(data) {
+    // If loadAction's background fetch is still in flight, ride on it.
+    if (_pipePromise) {
+      _pipePromise.then(function(data) {
+        if (data) renderPipeline(data);
+        else loadPipelineFresh(container);
+      });
+      return;
+    }
+    loadPipelineFresh(container);
+  };
+
+  function loadPipelineFresh(container) {
+    _pipePromise = saleFetch('sales_pipeline').then(function(data) {
+      _lastPipeData = data;
+      updatePipelineStatValue(data && data.pipeline_value);
       renderPipeline(data);
+      return data;
     }).catch(function(err) {
+      _pipePromise = null;
       container.innerHTML = '<div class="error-state"><p>Failed to load pipeline</p><p style="font-size:12px;margin-top:4px">' + friendlyError(err) + '</p><button class="btn btn-secondary btn-small" onclick="loadPipeline()" style="margin-top:12px">Retry</button></div>';
     });
-  };
+  }
 
   function renderPipeline(data) {
     var container = document.getElementById('pipelineContent');
